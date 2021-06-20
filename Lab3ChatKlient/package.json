@@ -1,0 +1,45 @@
+{
+  "name": "Lab3ChatKlient",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "sass": "sass src/scss/main.scss dist/css/main.css --style=compressed",
+    "autoprefixer": "npx postcss dist/css/*.css --use autoprefixer -r",
+    "images": "imagemin src/images/* --out-dir=dist/images",
+    "uglify": "uglifyjs src/js/*.js - -o dist/js/app.js && uglifyjs src/js/*.js -m -c -o dist/js/app.min.js",
+    "build:all": "npm run build:css && npm run build:js",
+    "build:css": "npm run sass && npm run autoprefixer",
+    "build:images": "npm run images",
+    "build:js": "npm run uglify",
+    "start": "http-server -c-1 dist"
+  },
+  "browserslist": [
+    "defaults"
+  ],
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@babel/core": "^7.14.5",
+    "@babel/preset-env": "^7.14.5",
+    "babel-loader": "^8.2.2",
+    "browser-sync": "^2.26.14",
+    "gulp": "^4.0.2",
+    "gulp-autoprefixer": "^8.0.0",
+    "gulp-sass": "^4.1.0",
+    "gulp-sourcemaps": "^3.0.0",
+    "sass": "^1.34.1",
+    "uglify-js": "^3.13.8",
+    "webpack": "^5.38.1",
+    "webpack-cli": "^4.7.2"
+  },
+  "dependencies": {
+    "@microsoft/signalr": "^5.0.7",
+    "autoprefixer": "^10.2.6",
+    "imagemin": "^8.0.0",
+    "postcss": "^8.3.0",
+    "postcss-cli": "^8.3.1"
+  }
+}
