@@ -8,6 +8,8 @@ using System.Threading.Tasks;
 
 namespace czatSerwerTIN.DBmanager
 {
+
+
     public class MongoConnect
     {
         string CONNECTION_STRING = "mongodb://darekddd:Password1!@localhost:2717";
@@ -22,6 +24,8 @@ namespace czatSerwerTIN.DBmanager
             database = client.GetDatabase("CzatDB");
             users = database.GetCollection<BsonDocument>("users");
         }
+
+        // dodaje nowego użytkownika tylko w sytuacji kiedy nie istnieje dokument o kluczu Name = name 
         public Task InsertUser(string name)
         {
            /* var document = new BsonDocument

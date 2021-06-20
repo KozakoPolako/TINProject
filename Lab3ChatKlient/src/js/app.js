@@ -5,7 +5,7 @@ import  * as signalR  from "@microsoft/signalr";
 let username;
 const loginBtn = document.querySelector(".loginBtn");
 
-//var connection = new signalR.HubConnectionBuilder().withUrl("https://localhost:5001/czatHub").build();
+
 console.log(signalR);
 var connection =connection = new signalR.HubConnectionBuilder()
 .configureLogging(signalR.LogLevel.Debug)
@@ -15,17 +15,12 @@ var connection =connection = new signalR.HubConnectionBuilder()
 })
 .build();
 
-loginBtn.disabled = true;
-//loginBtn.style.color = "red";
 
-connection.on("ReceiveMessage", function (user, message) {
-    // var li = document.createElement("li");
-    // document.getElementById("messagesList").appendChild(li);
-    // // We can assign user-supplied strings to an element's textContent because it
-    // // is not interpreted as markup. If you're assigning in any other way, you 
-    // // should be aware of possible script injection concerns.
-    // li.textContent = `${user} says ${message}`;
-});
+// wyłączenie przycisku do momentu połączenia 
+loginBtn.disabled = true;
+
+
+
 
 //start połączenia 
 connection.start().then( () => {
@@ -50,7 +45,7 @@ loginBtn.addEventListener("click", (event) => {
 })
 
 
-
+// tworzenie okna po zalogowaniu  
 const prepareWindow=function() {
 
     const children = Array.prototype.slice.call(loginBtn.parentNode.children);
@@ -69,7 +64,6 @@ const prepareWindow=function() {
     breakLine.classList.add("break");
     sendMessege.innerHTML = "<p>SEND</p>";
     
-    //container.style +="display: flex;";
 
     container.appendChild(messegesView);
     container.appendChild(breakLine);
@@ -78,8 +72,10 @@ const prepareWindow=function() {
 
     connection.on("ReceiveMessage", function (user, message) {
         const msg = document.createElement("p");
-        document.querySelector(".messegesView").appendChild(msg);
+        
+        messegesView.appendChild(msg);
         if(user === username) {
+            user = "You";
             msg.style.textAlign="right";
             msg.style.marginRight="3px";
             msg.style.color="#03A062";
@@ -89,10 +85,9 @@ const prepareWindow=function() {
             msg.style.color="white";
         }
         
-
-        
-        
-        msg.innerHTML = `${user}: ${message}`;
+        //skrolowanie listy wiadomości do dołu 
+        messegesView.scrollTop = messegesView.scrollHeight;
+        msg.innerHTML = `<span style="color: #00bfff;">${user}:</span><span>${message}</span>`;
     });
 
 

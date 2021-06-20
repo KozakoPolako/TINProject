@@ -10,7 +10,10 @@ namespace czatSerwerTIN.Hubs
 {
     public class CzatHub : Hub
     {
+        // zmienna tymczasowa służyła do testowania 
         string jsonlist = "[\"Darek\",\"Czarek\",\"Marek\"]";
+
+        // połaczenie z baządanyc 
         MongoConnect mongo = new MongoConnect();
 
         public async Task SendMessage(string user, string message)
@@ -26,7 +29,7 @@ namespace czatSerwerTIN.Hubs
         }
         public async Task Login(string userName)
         {   
-           Console.WriteLine("Działam =" + userName);
+           //Console.WriteLine("Działam =" + userName);
            await mongo.InsertUser(userName);
            
         }
