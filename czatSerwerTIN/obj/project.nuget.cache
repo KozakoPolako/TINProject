@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "kSeCf1SHnw3FUMVgLQllEpXjPnlenSNkmjIbMOt7WYAobjha3g7DlsTQZgd5O9GBv4JcjLoOuMMoQjQFgp/DfA==",
+  "dgSpecHash": "Ce3Gs7e5F0zjHfWJPxdUytV2yopUPDUMldg2tBG3x/tUEVk6+nwHshlZddtDR3AYUUfRYzL4l8cj57ZNjTMLYg==",
   "success": true,
-  "projectFilePath": "C:\\Users\\darex\\source\\repos\\Czat_Lab3TIN\\czatSerwerTIN\\czatSerwerTIN.csproj",
+  "projectFilePath": "C:\\Workspace\\TINlab3\\czatSerwerTIN\\czatSerwerTIN.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\darex\\.nuget\\packages\\dnsclient\\1.4.0\\dnsclient.1.4.0.nupkg.sha512",
     "C:\\Users\\darex\\.nuget\\packages\\microsoft.netcore.platforms\\2.1.2\\microsoft.netcore.platforms.2.1.2.nupkg.sha512",

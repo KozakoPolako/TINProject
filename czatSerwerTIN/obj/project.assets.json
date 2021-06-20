@@ -454,11 +454,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\darex\\source\\repos\\Czat_Lab3TIN\\czatSerwerTIN\\czatSerwerTIN.csproj",
+      "projectUniqueName": "C:\\Workspace\\TINlab3\\czatSerwerTIN\\czatSerwerTIN.csproj",
       "projectName": "czatSerwerTIN",
-      "projectPath": "C:\\Users\\darex\\source\\repos\\Czat_Lab3TIN\\czatSerwerTIN\\czatSerwerTIN.csproj",
+      "projectPath": "C:\\Workspace\\TINlab3\\czatSerwerTIN\\czatSerwerTIN.csproj",
       "packagesPath": "C:\\Users\\darex\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\darex\\source\\repos\\Czat_Lab3TIN\\czatSerwerTIN\\obj\\",
+      "outputPath": "C:\\Workspace\\TINlab3\\czatSerwerTIN\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\darex\\AppData\\Roaming\\NuGet\\NuGet.Config",
