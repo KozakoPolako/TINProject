@@ -1,1 +1,8 @@
 # TINProject
+
+
+
+
+
+# Jak to odpalić?
+
