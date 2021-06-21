@@ -57,6 +57,13 @@ const prepareWindow=function() {
     const messegeInput = document.createElement("input");
     const sendMessege = document.createElement("div");
     const breakLine = document.createElement("div");
+    
+    const div1 = document.createElement("div");
+    const div2 = document.createElement("div");
+
+    div1.style.width="100%";
+    div1.style.display="flex";
+    div2.style.width="100%";
 
     messegesView.classList.add("messegesView");
     messegeInput.classList.add("messegeInput");
@@ -67,8 +74,12 @@ const prepareWindow=function() {
 
     container.appendChild(messegesView);
     container.appendChild(breakLine);
-    container.appendChild(messegeInput);
-    container.appendChild(sendMessege);
+    container.appendChild(div1);
+    div1.appendChild(div2);
+    div2.appendChild(messegeInput);
+    div1.appendChild(sendMessege);
+    //container.appendChild(messegeInput);
+    //container.appendChild(sendMessege);
 
     connection.on("ReceiveMessage", function (user, message) {
         const msg = document.createElement("p");
