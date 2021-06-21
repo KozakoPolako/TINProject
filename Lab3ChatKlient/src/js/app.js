@@ -44,6 +44,15 @@ loginBtn.addEventListener("click", (event) => {
     
 })
 
+// klawisz enter aktywuje przycisk Start
+document.querySelector(".userNameInput").addEventListener("keyup", (event) => {
+
+    if (event.key === 'Enter') {
+        event.preventDefault();
+        loginBtn.click();
+    } 
+})
+
 
 // tworzenie okna po zalogowaniu  
 const prepareWindow=function() {
@@ -107,6 +116,15 @@ const prepareWindow=function() {
         document.querySelector(".messegeInput").value = "";
         connection.invoke("SendMessage", username, message).catch( (err) => console.error(err.toString()) );
     });
+
+    // klawisz enter aktywuje przycisk sendsendMessage
+    messegeInput.addEventListener("keyup", (event) => {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            sendMessege.click();
+        }
+    })
+    
        
     
 };
