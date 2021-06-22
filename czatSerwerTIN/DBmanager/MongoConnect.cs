@@ -52,14 +52,14 @@ namespace czatSerwerTIN.DBmanager
             return users.UpdateOneAsync(filter, update);
         }
 
-        public Task<IAsyncCursor<BsonDocument>> GetActiveUsers()
+        public Task<IAsyncCursor<BsonDocument>> GetUsers()
         {
 
-            var filter = Builders<BsonDocument>.Filter.Eq("IsActive", "true");
+            //var filter = Builders<BsonDocument>.Filter.Eq("IsActive", "true");
             //string Users = users.FindAsync(filter).;
 
 
-            return users.FindAsync(filter); 
+            return users.FindAsync(_ => true); 
                 
         }
         

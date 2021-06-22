@@ -44,7 +44,7 @@ loginBtn.addEventListener("click", (event) => {
         .catch(err => console.error(err.toString()));
     event.preventDefault();
 
-    connection.invoke("GetActiveUsers")
+    connection.invoke("GetUsers")
         .catch(err => console.error(err.toString()));
     event.preventDefault();
     
@@ -60,6 +60,10 @@ document.querySelector(".userNameInput").addEventListener("keyup", (event) => {
 })
 
 
+
+
+
+
 // tworzenie okna po zalogowaniu  
 const prepareWindow=function() {
 
@@ -67,6 +71,12 @@ const prepareWindow=function() {
     children.forEach(el => el.remove());
 
     const container = document.querySelector(".container");
+    container.remove();
+
+    const appPanel = document.createElement("div");
+    
+    const groupsList = document.createElement("div");
+    const usersList = document.createElement("div");
 
     const messegesView = document.createElement("div");
     const messegeInput = document.createElement("input");
@@ -80,19 +90,33 @@ const prepareWindow=function() {
     div1.style.display="flex";
     div2.style.width="100%";
 
+    appPanel.classList.add("appPanel");
+
+    groupsList.classList.add("listPanel");
+    groupsList.id = "groupsList";
+    usersList.classList.add("listPanel");
+    usersList.id = "usersList";
+
     messegesView.classList.add("messegesView");
     messegeInput.classList.add("messegeInput");
     sendMessege.classList.add("sendMessege");
     breakLine.classList.add("break");
     sendMessege.innerHTML = "<p>SEND</p>";
     
-
+    
     container.appendChild(messegesView);
     container.appendChild(breakLine);
     container.appendChild(div1);
     div1.appendChild(div2);
     div2.appendChild(messegeInput);
     div1.appendChild(sendMessege);
+
+    appPanel.appendChild(groupsList);
+    appPanel.appendChild(container);
+    appPanel.appendChild(usersList);
+
+    document.querySelector(".content").appendChild(appPanel);
+    //container.appendChild(appPanel);
     //container.appendChild(messegeInput);
     //container.appendChild(sendMessege);
 
@@ -121,8 +145,9 @@ const prepareWindow=function() {
     });
 
     connection.on("ReciveUserList" ,  json => {
-        activeUsers  = JSON.parse(json);
-        console.dir(activeUsers);
+        //activeUsers  = JSON.parse(json);
+        //console.dir(activeUsers);
+        buildUsersList(json);
     } );
 
 
@@ -143,3 +168,26 @@ const prepareWindow=function() {
        
     
 };
+
+const buildUsersList = function(json) {
+
+    console.log("działam");
+    const usersList = document.querySelector("#usersList");
+
+    const children = Array.prototype.slice.call(usersList.children);
+    children.forEach(el => el.remove());
+
+    console.log("działam");
+    let user;
+    const Users = JSON.parse(json);
+    console.dir(Users);
+    Users.forEach(el => {
+        user = document.createElement("p");
+        user.innerHTML = el.name;
+        if (el.isActive === "true" ) {
+            user.style.color="#03A062";
+        }else {
+            user.style.color="white"; }
+        usersList.appendChild(user);
+    });
+}

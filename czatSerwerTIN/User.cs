@@ -15,8 +15,8 @@ namespace czatSerwerTIN
         
         public string connID { get; set; }
         public string name { get; set; }
-        public Boolean isActive { get; set; }
-        public User(string name, string connID, bool isActive)
+        public string isActive { get; set; }
+        public User(string name, string connID, string isActive)
         {
             this.name = name;
             this.connID = connID;

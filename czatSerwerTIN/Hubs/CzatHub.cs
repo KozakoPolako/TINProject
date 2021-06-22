@@ -23,16 +23,18 @@ namespace czatSerwerTIN.Hubs
             await Clients.All.SendAsync("ReceiveMessage", user, message);
         }
 
-        public async Task GetActiveUsers()
+        public async Task GetUsers()
         {
             List<User> list = new List<User>();
             
-            var cursor = await mongo.GetActiveUsers();
-            await cursor.ForEachAsync(db => list.Add(new User(db["Name"].AsString, db["ConnID"].AsString, db["IsActive"].ToBoolean())));
+            var cursor = await mongo.GetUsers();
+
+            //TRZEBA NAPRAWIĆ IsActive powinno być boolean ale zawsze wtedy dawało true
+            await cursor.ForEachAsync(db => list.Add(new User(db["Name"].AsString, db["ConnID"].AsString, db["IsActive"].AsString)));
             
             var json = JsonSerializer.Serialize(list);
             
-            await Clients.Caller.SendAsync("ReciveUserList", json );
+            await Clients.All.SendAsync("ReciveUserList", json );
         }
         public async Task Login(string userName)
         {   
@@ -51,7 +53,7 @@ namespace czatSerwerTIN.Hubs
         public override async Task OnDisconnectedAsync(Exception exception)
         {
             await mongo.LogoutUser(Context.ConnectionId);
-            
+            await GetUsers();
             await base.OnDisconnectedAsync(exception);
             
         }
