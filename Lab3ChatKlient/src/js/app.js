@@ -3,6 +3,8 @@ import  * as signalR  from "@microsoft/signalr";
 
 
 let username;
+
+let activeUsers;
 const loginBtn = document.querySelector(".loginBtn");
 
 
@@ -39,6 +41,10 @@ loginBtn.addEventListener("click", (event) => {
     prepareWindow();
     console.log("Zalogowano");
     connection.invoke("Login",username)
+        .catch(err => console.error(err.toString()));
+    event.preventDefault();
+
+    connection.invoke("GetActiveUsers")
         .catch(err => console.error(err.toString()));
     event.preventDefault();
     
@@ -96,10 +102,14 @@ const prepareWindow=function() {
         messegesView.appendChild(msg);
         if(user === username) {
             user = "You";
+            msg.style.width="80%";
+            msg.style.float="right";
             msg.style.textAlign="right";
             msg.style.marginRight="3px";
             msg.style.color="#03A062";
         }else{
+            msg.style.width="80%";
+            msg.style.float="left";
             msg.style.textAlign="left";
             msg.style.marginLeft="3px";
             msg.style.color="white";
@@ -109,6 +119,11 @@ const prepareWindow=function() {
         messegesView.scrollTop = messegesView.scrollHeight;
         msg.innerHTML = `<span style="color: #00bfff;">${user}:</span><span>${message}</span>`;
     });
+
+    connection.on("ReciveUserList" ,  json => {
+        activeUsers  = JSON.parse(json);
+        console.dir(activeUsers);
+    } );
 
 
     document.querySelector(".sendMessege").addEventListener("click", (event) => {

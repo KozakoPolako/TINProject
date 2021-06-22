@@ -26,7 +26,7 @@ namespace czatSerwerTIN.DBmanager
         }
 
         // dodaje nowego użytkownika tylko w sytuacji kiedy nie istnieje dokument o kluczu Name = name 
-        public Task InsertUser(string name)
+        public Task InsertUser(string name, string connID)
         {
            /* var document = new BsonDocument
             {
@@ -34,19 +34,32 @@ namespace czatSerwerTIN.DBmanager
                 {BulkWriteUpsert. }
             };*/
 
+                
             var filter = Builders<BsonDocument>.Filter.Eq("Name", name);
-            var update = Builders<BsonDocument>.Update.Set("Name",name);
+            var update = Builders<BsonDocument>.Update.Set("Name",name ) 
+                .Set("ConnID",connID)
+                .Set("IsActive", "true");
             var options = new UpdateOptions { IsUpsert = true };
             return users.UpdateOneAsync(filter, update, options);
         }
-        public List<string> GetUserList()
+        public Task LogoutUser( string connID)
         {
-            List<string> Users = new List<string>();
-            
-            users.Find(_ => true).ToList().ForEach(element => {
-                Users.Add(element["Name"].AsString);
-            });
-            return Users;
+           
+
+            var filter = Builders<BsonDocument>.Filter.Eq("ConnID", connID);
+            var update = Builders<BsonDocument>.Update.Set("IsActive", "false");
+                
+            return users.UpdateOneAsync(filter, update);
+        }
+
+        public Task<IAsyncCursor<BsonDocument>> GetActiveUsers()
+        {
+
+            var filter = Builders<BsonDocument>.Filter.Eq("IsActive", "true");
+            //string Users = users.FindAsync(filter).;
+
+
+            return users.FindAsync(filter); 
                 
         }
         

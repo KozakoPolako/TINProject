@@ -9,10 +9,18 @@ namespace czatSerwerTIN
 {
     public class User
     {
+       
         [BsonId]
         [BsonRepresentation(MongoDB.Bson.BsonType.ObjectId)]
-        public string Id { get; set; }
-        public string Name { get; set; }
-        public Boolean IsActive { get; set; }
+        
+        public string connID { get; set; }
+        public string name { get; set; }
+        public Boolean isActive { get; set; }
+        public User(string name, string connID, bool isActive)
+        {
+            this.name = name;
+            this.connID = connID;
+            this.isActive = isActive;
+        }
     }
 }
