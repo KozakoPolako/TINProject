@@ -30,16 +30,16 @@ namespace czatSerwerTIN.DBmanager
         // dodaje nowego użytkownika tylko w sytuacji kiedy nie istnieje dokument o kluczu Name = name 
         public Task InsertUser(string name, string connID)
         {
-           /* var document = new BsonDocument
-            {
-                { "Name",name},
-                {BulkWriteUpsert. }
-            };*/
+            /* var document = new BsonDocument
+             {
+                 { "Name",name},
+                 {BulkWriteUpsert. }
+             };*/
 
-                
+
             var filter = Builders<BsonDocument>.Filter.Eq("Name", name);
-            var update = Builders<BsonDocument>.Update.Set("Name",name ) 
-                .Set("ConnID",connID)
+            var update = Builders<BsonDocument>.Update.Set("Name", name)
+                .Set("ConnID", connID)
                 .Set("IsActive", "true");
             var options = new UpdateOptions { IsUpsert = true };
             return users.UpdateOneAsync(filter, update, options);
@@ -49,18 +49,18 @@ namespace czatSerwerTIN.DBmanager
         {
             var filter = Builders<BsonDocument>.Filter.Eq("GroupName", groupName);
             var update = Builders<BsonDocument>.Update.AddToSet("Members", name);
-                
+
             var options = new UpdateOptions { IsUpsert = true };
 
             return groups.UpdateOneAsync(filter, update, options);
         }
-        public Task LogoutUser( string connID)
+        public Task LogoutUser(string connID)
         {
-           
+
 
             var filter = Builders<BsonDocument>.Filter.Eq("ConnID", connID);
             var update = Builders<BsonDocument>.Update.Set("IsActive", "false");
-                
+
             return users.UpdateOneAsync(filter, update);
         }
         public Task<IAsyncCursor<BsonDocument>> GetGroupUsers(string groupname)
@@ -76,9 +76,25 @@ namespace czatSerwerTIN.DBmanager
             //string Users = users.FindAsync(filter).;
 
 
-            return users.FindAsync(_ => true); 
-                
+            return users.FindAsync(_ => true);
+
         }
-        
+        public Task<IAsyncCursor<BsonDocument>> GetGroups(string user)
+        {
+
+            //{Members:{$elemMatch: {$eq:"Darek"}}}
+            //var filter = new BsonDocument {{$elemMatch: {$eq: "Darek"} } };
+
+    //var filter = Builders<BsonDocument>.Filter.ElemMatch(x => x["Members"], user);
+
+
+    //var filter = Builders<>.Filter.ElemMatch( x => x.Name == "test");
+    //var options = new FindOptions {  }; 
+    //Console.WriteLine("jojojjojo");
+
+            return groups.FindAsync("{Members:{$elemMatch: {$eq:\"Darek\"}}}");
+
+        }
+
     }
 }

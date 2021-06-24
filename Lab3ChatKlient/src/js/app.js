@@ -3,7 +3,7 @@ import  * as signalR  from "@microsoft/signalr";
 
 
 let username;
-
+const selected = { item: "none" , type:"none"};
 let activeUsers;
 const loginBtn = document.querySelector(".loginBtn");
 
@@ -150,6 +150,12 @@ const prepareWindow=function() {
         buildUsersList(json);
     } );
 
+    connection.on("ReciveGroupList" ,  json => {
+        //activeUsers  = JSON.parse(json);
+        //console.dir(activeUsers);
+        buildGroupsList(json);
+    } );
+
 
     document.querySelector(".sendMessege").addEventListener("click", (event) => {
         const message = document.querySelector(".messegeInput").value;
@@ -164,10 +170,13 @@ const prepareWindow=function() {
             sendMessege.click();
         }
     })
-    /*  Testowanie Grup ();
+    // Testowanie Grup ();
     console.log("jo");
-    connection.invoke("AddUserToGroup","Czarek","Grupa Testowa");
-    connection.invoke("SendMessageToGroup","Darek","Grupa Testowa","Wiadomość testowa"); */
+    //connection.invoke("AddUserToGroup","Czarek","Grupa nie testowa");
+    //connection.invoke("AddUserToGroup","Marek","Grupa nie testowa");
+    //connection.invoke("AddUserToGroup","Darek","prawidlowa");
+    //connection.invoke("SendMessageToGroup","Darek","Grupa Testowa","Wiadomość testowa");
+    connection.invoke("GetGroups","Darek");
     
 };
 
@@ -190,6 +199,70 @@ const buildUsersList = function(json) {
             user.style.color="#03A062";
         }else {
             user.style.color="white"; }
+        
+        
+        if (el.name === selected.item) {
+            user.classList.add("selected");
+        }
+        
+        user.addEventListener("click",getSelected);
         usersList.appendChild(user);
     });
+
+
+
+    setTimeout(() => {
+        connection.invoke("GetUsers")
+            .catch(err => console.error(err.toString()));
+    },15000);
 }
+
+const buildGroupsList = function(json) {
+
+    const usersList = document.querySelector("#groupsList");
+
+    const children = Array.prototype.slice.call(usersList.children);
+    children.forEach(el => el.remove());
+
+    console.log("grupy");
+    let group;
+    const Groups = JSON.parse(json);
+    console.dir(Groups);
+    Groups.forEach(el => {
+        group = document.createElement("p");
+        group.innerHTML = el;
+        group.style.color="white";
+        group.addEventListener("click",getSelected);
+        usersList.appendChild(group);
+    });
+}
+
+const getSelected = function() {
+
+    //    
+    //console.dir(this);
+    const sel = document.querySelector(".selected");
+    if ( sel ){
+        sel.classList.remove("selected");
+    }
+    ;
+    if (selected.item === this.innerHTML) {
+        selected.item = "none";
+        selected.type = "none";
+    }else{
+
+        selected.item =this.innerHTML;
+        if(this.parentNode.id === "usersList") {
+            selected.type = "user";
+        }else {
+            selected.type = "group";
+        }
+        this.classList.add("selected");
+    }
+    console.dir(selected);
+
+
+
+    
+}
+

@@ -109,6 +109,7 @@ input{
 }
 .listPanel{
     width: 200px;
+    padding-left: 5px;
     //height: 464px;
     height: 458px;
     border: 3px solid white; 
@@ -118,4 +119,15 @@ input{
 }
 .appPanel{
     display: flex;
+}
+
+.selected {
+    color:black !important;
+    background-color:white;
+}
+
+.listPanel > p:hover {
+    color: black !important;
+    background-color:white;
+    cursor: pointer;
 }

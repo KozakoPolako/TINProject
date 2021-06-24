@@ -35,7 +35,21 @@ namespace czatSerwerTIN.Hubs
             
             var json = JsonSerializer.Serialize(list);
             
-            await Clients.All.SendAsync("ReciveUserList", json );
+            await Clients.Caller.SendAsync("ReciveUserList", json );
+        }
+
+        public async Task GetGroups( string user)
+        {
+            List<string> list = new List<string>();
+
+            var cursor = await mongo.GetGroups(user);
+
+            
+            await cursor.ForEachAsync(db => list.Add( db["GroupName"].AsString));
+
+            var json = JsonSerializer.Serialize(list);
+
+            await Clients.Caller.SendAsync("ReciveGroupList", json);
         }
         public async Task Login(string userName)
         {   

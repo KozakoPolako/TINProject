@@ -22,6 +22,7 @@ namespace czatSerwerTIN
             //var database = client.GetDatabase("ChatDB");
             //Console.WriteLine(database.GetCollection<string>("users").Find( some =>true).ToList<string>());
             CreateWebHostBUilder(args).Build().Run();
+
             
         }
 
