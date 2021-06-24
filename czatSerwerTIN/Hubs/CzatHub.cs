@@ -6,6 +6,7 @@ using czatSerwerTIN.DBmanager;
 using Microsoft.AspNetCore.SignalR;
 using System.Text.Json;
 using MongoDB.Driver;
+using MongoDB.Bson;
 
 namespace czatSerwerTIN.Hubs
 {
@@ -40,7 +41,30 @@ namespace czatSerwerTIN.Hubs
         {   
            //Console.WriteLine("Działam =" + userName);
            await mongo.InsertUser(userName, Context.ConnectionId);
+           await Groups.AddToGroupAsync(Context.ConnectionId, userName + "_user");
            
+        }
+
+        public async Task AddUserToGroup(string name, string grupname) 
+        {
+            await mongo.AddUserToGroup(name, grupname);
+        }
+
+        public async Task SendPrivateMessage(string sender, string receiver, string message)
+        {
+            await Clients.Group(receiver + "_user").SendAsync("ReceiveMessage", sender, message);
+        }
+
+        public async Task SendMessageToGroup(string sender, string group, string message)
+        {
+            //List<string> members = new List<string>();
+            //BsonArr
+            BsonArray members = new BsonArray();
+            var cursor =  await mongo.GetGroupUsers(group);
+
+            await cursor.ForEachAsync(db => members = db["Members"].AsBsonArray);
+            members.Values.ToList().ForEach(async (member) => await SendPrivateMessage(sender, member.AsString,message));
+
         }
 
         public override async  Task OnConnectedAsync()

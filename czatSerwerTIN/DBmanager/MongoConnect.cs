@@ -17,12 +17,14 @@ namespace czatSerwerTIN.DBmanager
         MongoClient client;
         IMongoDatabase database;
         IMongoCollection<BsonDocument> users;
+        IMongoCollection<BsonDocument> groups;
 
         public MongoConnect()
         {
             client = new MongoClient(CONNECTION_STRING);
             database = client.GetDatabase("CzatDB");
             users = database.GetCollection<BsonDocument>("users");
+            groups = database.GetCollection<BsonDocument>("groups");
         }
 
         // dodaje nowego użytkownika tylko w sytuacji kiedy nie istnieje dokument o kluczu Name = name 
@@ -42,6 +44,16 @@ namespace czatSerwerTIN.DBmanager
             var options = new UpdateOptions { IsUpsert = true };
             return users.UpdateOneAsync(filter, update, options);
         }
+
+        public Task AddUserToGroup(string name, string groupName)
+        {
+            var filter = Builders<BsonDocument>.Filter.Eq("GroupName", groupName);
+            var update = Builders<BsonDocument>.Update.AddToSet("Members", name);
+                
+            var options = new UpdateOptions { IsUpsert = true };
+
+            return groups.UpdateOneAsync(filter, update, options);
+        }
         public Task LogoutUser( string connID)
         {
            
@@ -50,6 +62,11 @@ namespace czatSerwerTIN.DBmanager
             var update = Builders<BsonDocument>.Update.Set("IsActive", "false");
                 
             return users.UpdateOneAsync(filter, update);
+        }
+        public Task<IAsyncCursor<BsonDocument>> GetGroupUsers(string groupname)
+        {
+            var filter = Builders<BsonDocument>.Filter.Eq("GroupName", groupname);
+            return groups.FindAsync(filter);
         }
 
         public Task<IAsyncCursor<BsonDocument>> GetUsers()

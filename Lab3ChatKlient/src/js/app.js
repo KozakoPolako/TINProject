@@ -164,8 +164,10 @@ const prepareWindow=function() {
             sendMessege.click();
         }
     })
-    
-       
+    /*  Testowanie Grup ();
+    console.log("jo");
+    connection.invoke("AddUserToGroup","Czarek","Grupa Testowa");
+    connection.invoke("SendMessageToGroup","Darek","Grupa Testowa","Wiadomość testowa"); */
     
 };
 
