@@ -63,6 +63,10 @@ namespace czatSerwerTIN.Hubs
         {
             await mongo.AddUserToGroup(name, grupname);
         }
+        public async Task RemoveUserFromGroup(string name, string grupname)
+        {
+            await mongo.RemoveUserFromGroup(name, grupname);
+        }
 
         public async Task SendPrivateMessage(string sender, string receiver, string message)
         {

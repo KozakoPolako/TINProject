@@ -54,6 +54,11 @@ namespace czatSerwerTIN.DBmanager
 
             return groups.UpdateOneAsync(filter, update, options);
         }
+
+        public Task RemoveUserFromGroup(string name, string groupName)
+        {
+            return groups.UpdateOneAsync("{GroupName: \"" + groupName + "\"}","{$pull: {Members: \""+name+"\"}}");
+        }
         public Task LogoutUser(string connID)
         {
 

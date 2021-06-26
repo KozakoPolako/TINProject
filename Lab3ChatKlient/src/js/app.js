@@ -12,6 +12,7 @@ console.log(signalR);
 var connection =connection = new signalR.HubConnectionBuilder()
 .configureLogging(signalR.LogLevel.Debug)
 .withUrl("http://localhost:5000/czathub", {
+//.withUrl("http://192.168.0.246:5000/czathub", {
   skipNegotiation: true,
   transport: signalR.HttpTransportType.WebSockets
 })
@@ -267,6 +268,8 @@ const buildGroupsList = function(json) {
 
 const getSelected = function() {
 
+    document.querySelector(".joinBTN").innerHTML ="<p>JOIN</p>";
+
     //    
     //console.dir(this);
     const sel = document.querySelector(".selected");
@@ -283,6 +286,7 @@ const getSelected = function() {
         if(this.parentNode.id === "usersList") {
             selected.type = "user";
         }else {
+            document.querySelector(".joinBTN").innerHTML ="<p>LEAVE</p>";
             selected.type = "group";
         }
         this.classList.add("selected");
@@ -295,42 +299,56 @@ const getSelected = function() {
 }
 
 const addToGroup = function() {
-    const window = document.createElement("div");
-    const groupInput = document.createElement("input");
-    const joinBTN = document.createElement("div");
 
-    groupInput.classList.add("groupInput");
-    joinBTN.classList.add("joinTogroupBTN");
-    window.classList.add("addToGroup");
+    if(selected.type === "group"){
 
-    groupInput.placeholder ="Groupname";
-    joinBTN.innerHTML ="<p>EXIT</p>";
+        connection.invoke("RemoveUserFromGroup",username,selected.item)
+            .catch(err => console.error(err.toString()));
+        connection.invoke("GetGroups",username)
+            .catch(err => console.error(err.toString()));
+        selected.item ="none";
+        selected.type ="none";
+        document.querySelector(".joinBTN").innerHTML ="<p>JOIN</p>";
 
-    window.appendChild(groupInput);
-    window.appendChild(joinBTN);
+    }else {
+        const window = document.createElement("div");
+        const groupInput = document.createElement("input");
+        const joinBTN = document.createElement("div");
 
-    document.querySelector("body").appendChild(window);
-    // zmiana wartości przycisku w zależności od wartości pola
-    groupInput.addEventListener("input" , ()=>{
-        if (groupInput.value ===""){
-            joinBTN.innerHTML ="<p>EXIT</p>";
-        }else {
-            joinBTN.innerHTML ="<p>JOIN</p>";
-        }
+        groupInput.classList.add("groupInput");
+        joinBTN.classList.add("joinTogroupBTN");
+        window.classList.add("addToGroup");
+
+        groupInput.placeholder ="Groupname";
+        joinBTN.innerHTML ="<p>EXIT</p>";
+
+        window.appendChild(groupInput);
+        window.appendChild(joinBTN);
+
+        document.querySelector("body").appendChild(window);
+        // zmiana wartości przycisku w zależności od wartości pola
+        groupInput.addEventListener("input" , ()=>{
+            if (groupInput.value ===""){
+                joinBTN.innerHTML ="<p>EXIT</p>";
+            }else {
+                joinBTN.innerHTML ="<p>JOIN</p>";
+            }
         
-    })
+        })
 
-    //dodawanie do grupy
-    joinBTN.addEventListener("click", () => {
-        if (groupInput.value ===""){
-            window.remove();
-        }else {
+        //dodawanie do grupy
+        joinBTN.addEventListener("click", () => {
+            if (groupInput.value ===""){
+                window.remove();
+            }else {
             
-            connection.invoke("AddUserToGroup",username,groupInput.value)
-                .catch(err => console.error(err.toString()));
-            connection.invoke("GetGroups",username)
-                .catch(err => console.error(err.toString()));
-            window.remove();
-        }
-    });
+                connection.invoke("AddUserToGroup",username,groupInput.value)
+                    .catch(err => console.error(err.toString()));
+                connection.invoke("GetGroups",username)
+                    .catch(err => console.error(err.toString()));
+                window.remove();
+            }
+        });
+    }
+    
 }
