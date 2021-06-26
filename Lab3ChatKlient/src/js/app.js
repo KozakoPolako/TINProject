@@ -42,11 +42,14 @@ loginBtn.addEventListener("click", (event) => {
     console.log("Zalogowano");
     connection.invoke("Login",username)
         .catch(err => console.error(err.toString()));
-    event.preventDefault();
+    
 
     connection.invoke("GetUsers")
         .catch(err => console.error(err.toString()));
     event.preventDefault();
+
+    connection.invoke("GetGroups",username)
+        .catch(err => console.error(err.toString()));
     
 })
 
@@ -82,9 +85,11 @@ const prepareWindow=function() {
     const messegeInput = document.createElement("input");
     const sendMessege = document.createElement("div");
     const breakLine = document.createElement("div");
+    const join = document.createElement("div");
     
     const div1 = document.createElement("div");
     const div2 = document.createElement("div");
+    const div3 = document.createElement("div");
 
     div1.style.width="100%";
     div1.style.display="flex";
@@ -94,6 +99,8 @@ const prepareWindow=function() {
 
     groupsList.classList.add("listPanel");
     groupsList.id = "groupsList";
+    groupsList.style.height ="400px";
+
     usersList.classList.add("listPanel");
     usersList.id = "usersList";
 
@@ -101,7 +108,9 @@ const prepareWindow=function() {
     messegeInput.classList.add("messegeInput");
     sendMessege.classList.add("sendMessege");
     breakLine.classList.add("break");
+    join.classList.add("joinBTN")
     sendMessege.innerHTML = "<p>SEND</p>";
+    join.innerHTML = "<p>JOIN</p>";
     
     
     container.appendChild(messegesView);
@@ -111,7 +120,10 @@ const prepareWindow=function() {
     div2.appendChild(messegeInput);
     div1.appendChild(sendMessege);
 
-    appPanel.appendChild(groupsList);
+    div3.appendChild(groupsList);
+    div3.appendChild(join);
+
+    appPanel.appendChild(div3);
     appPanel.appendChild(container);
     appPanel.appendChild(usersList);
 
@@ -156,11 +168,20 @@ const prepareWindow=function() {
         buildGroupsList(json);
     } );
 
-
+    join.addEventListener("click", addToGroup);
+    
     document.querySelector(".sendMessege").addEventListener("click", (event) => {
         const message = document.querySelector(".messegeInput").value;
         document.querySelector(".messegeInput").value = "";
-        connection.invoke("SendMessage", username, message).catch( (err) => console.error(err.toString()) );
+        if (selected.item ==="none"){
+           connection.invoke("SendMessage", username, message).catch( (err) => console.error(err.toString()) ); 
+        }
+        else if(selected.type ==="user") {
+            connection.invoke("SendPrivateMessage", username,selected.item, message).catch( (err) => console.error(err.toString()) );
+        }else {
+            connection.invoke("SendMessageToGroup", username,selected.item, message).catch( (err) => console.error(err.toString()) );
+        }
+        
     });
 
     // klawisz enter aktywuje przycisk sendsendMessage
@@ -176,7 +197,7 @@ const prepareWindow=function() {
     //connection.invoke("AddUserToGroup","Marek","Grupa nie testowa");
     //connection.invoke("AddUserToGroup","Darek","prawidlowa");
     //connection.invoke("SendMessageToGroup","Darek","Grupa Testowa","Wiadomość testowa");
-    connection.invoke("GetGroups","Darek");
+    
     
 };
 
@@ -214,6 +235,9 @@ const buildUsersList = function(json) {
     setTimeout(() => {
         connection.invoke("GetUsers")
             .catch(err => console.error(err.toString()));
+        connection.invoke("GetGroups",username)
+            .catch(err => console.error(err.toString()));
+        console.log(username);
     },15000);
 }
 
@@ -232,8 +256,12 @@ const buildGroupsList = function(json) {
         group = document.createElement("p");
         group.innerHTML = el;
         group.style.color="white";
+        if (el === selected.item) {
+            group.classList.add("selected");
+        }
         group.addEventListener("click",getSelected);
         usersList.appendChild(group);
+        
     });
 }
 
@@ -266,3 +294,43 @@ const getSelected = function() {
     
 }
 
+const addToGroup = function() {
+    const window = document.createElement("div");
+    const groupInput = document.createElement("input");
+    const joinBTN = document.createElement("div");
+
+    groupInput.classList.add("groupInput");
+    joinBTN.classList.add("joinTogroupBTN");
+    window.classList.add("addToGroup");
+
+    groupInput.placeholder ="Groupname";
+    joinBTN.innerHTML ="<p>EXIT</p>";
+
+    window.appendChild(groupInput);
+    window.appendChild(joinBTN);
+
+    document.querySelector("body").appendChild(window);
+    // zmiana wartości przycisku w zależności od wartości pola
+    groupInput.addEventListener("input" , ()=>{
+        if (groupInput.value ===""){
+            joinBTN.innerHTML ="<p>EXIT</p>";
+        }else {
+            joinBTN.innerHTML ="<p>JOIN</p>";
+        }
+        
+    })
+
+    //dodawanie do grupy
+    joinBTN.addEventListener("click", () => {
+        if (groupInput.value ===""){
+            window.remove();
+        }else {
+            
+            connection.invoke("AddUserToGroup",username,groupInput.value)
+                .catch(err => console.error(err.toString()));
+            connection.invoke("GetGroups",username)
+                .catch(err => console.error(err.toString()));
+            window.remove();
+        }
+    });
+}

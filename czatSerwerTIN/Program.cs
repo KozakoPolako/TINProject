@@ -12,7 +12,8 @@ namespace czatSerwerTIN
         static void Main(string[] args)
         {
 
-            //MongoConnect mongo = new MongoConnect();
+            MongoConnect mongo = new MongoConnect();
+            mongo.LogoutAll();
             //mongo.InsertUser("Marcin");
            /* mongo.GetUserList().ForEach(element => {
                 Console.WriteLine(element);

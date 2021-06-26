@@ -92,8 +92,14 @@ namespace czatSerwerTIN.DBmanager
     //var options = new FindOptions {  }; 
     //Console.WriteLine("jojojjojo");
 
-            return groups.FindAsync("{Members:{$elemMatch: {$eq:\"Darek\"}}}");
+            return groups.FindAsync("{Members:{$elemMatch: {$eq:\""+user+"\"}}}");
 
+        }
+        public Task LogoutAll()
+        {
+            var filter = Builders<BsonDocument>.Filter.Eq("IsActive", "true");
+            var update = Builders<BsonDocument>.Update.Set("IsActive", "false");
+            return users.UpdateManyAsync(filter, update);
         }
 
     }
