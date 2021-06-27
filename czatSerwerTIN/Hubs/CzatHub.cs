@@ -71,7 +71,7 @@ namespace czatSerwerTIN.Hubs
         public async Task SendPrivateMessage(string sender, string receiver, string message)
         {
             await Clients.Group(receiver + "_user").SendAsync("ReceiveMessage", sender, message);
-            await Clients.Group(sender + "_user").SendAsync("ReceiveMessage", sender, message);
+           // await Clients.Group(sender + "_user").SendAsync("ReceiveMessage", sender, message);
         }
 
         public async Task SendMessageToGroup(string sender, string group, string message)
