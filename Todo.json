@@ -1,0 +1,49 @@
+Dodać możliwość logowania(login hasło)
+
+dodać zapisywanie konwersacji(wiadomości) oraz przełączanie między nimi 
+
+rozbudować strukture kolekcji users oraz group przykładowo 
+
+"user":{
+	"_id": {
+        "$oid": "60cee781c21d723b7488820b"
+    },
+    "Name": "Darek",
+    "Password": "Password1", // nw czy jakoś inaczej tego nie przechowywać ale tak chyba będzie najprościej 
+    "ConnID": ["heA66hH1f_skyFgvMYpdIA",..., "Cw9BZVFYEfMv4PxSDBS1EQ"], //możliwość logowania na wielu użądzeniach jednocześnie podczas OnDisconnectedAsync odpowiednie id będzie usuwane i jeżeli będzie puste isActive na false
+    "Groups": [
+        {
+            "Groupname":"nazwa",
+            "GroupID": "jakies ID"
+        },
+        ...,
+        {
+            "Groupname":"nazwa12",
+            "GroupID": "jakies ID"
+        }
+    ],
+    "IsActive": "true"
+}
+
+"groups":{
+    "_id": {
+        "$oid": "60d464b27f4252587b7a1438"
+    },
+    "GroupName": "Grupa Testowa",
+    "Type":"group", //czy to rozmowa grupowa czy prywatna(sądzę że wygodnie będzie traktować prywatne rozmowy jako grupy)
+    "Members": ["Dominika", "Geralt", "Paczek", "Darek"],
+    "Content": [
+        {
+            "Sender": "name",
+            "Time": "czas wysłania",
+            "Message":"Tutaj będzie wiadomość"
+        },
+        ...,
+        {
+            "Sender": "name",
+            "Time": "czas wysłania",
+            "Message":"Tutaj będzie wiadomość"
+        }
+    ]
+}
+

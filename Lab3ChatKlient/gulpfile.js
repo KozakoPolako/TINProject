@@ -13,7 +13,7 @@
              baseDir: "./dist"
          },
          notify: false,
-         host: "192.168.0.246",
+         host: "localhost",
          port: 3000,
          open: false,
          ghostMode: false

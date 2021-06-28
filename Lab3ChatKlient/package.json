@@ -19,7 +19,7 @@
     "defaults"
   ],
   "keywords": [],
-  "author": "",
+  "author": "Dariusz Dąborwski",
   "license": "ISC",
   "devDependencies": {
     "@babel/core": "^7.14.5",
