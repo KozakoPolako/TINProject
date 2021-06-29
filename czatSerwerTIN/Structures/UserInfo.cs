@@ -8,8 +8,58 @@ namespace czatSerwerTIN.Structures
 {
     class UserInfo
     {
+        /// <summary>
+        /// Ciąg znakowy reprezentujący nazwę użytkownika w systemie
+        /// </summary>
         public string userName { get; set; }
+        /// <summary>
+        /// Lista przechowująca ID połączeń SignalR dla aktywnych klientów zalogowanych do użytkownika
+        /// </summary>
         public List<string> connectionIDs { get; set; }
+
+        public UserInfo(string userName)
+        {
+            this.userName = userName;
+            connectionIDs = new();
+        }
+
+        /// <summary>
+        /// Funkcja dodaje ID połączenia klienta do listy ID połączeń przypisanej do danego obiektu użytkownika
+        /// </summary>
+        /// <param name="connID">ciąg znakowy reprezentujący ID połączenia danego klienta</param>
+        public void addConnectionID(string connID)
+        {
+            if(!connectionIDs.Contains(connID))
+                connectionIDs.Add(connID);
+        }
+
+        /// <summary>
+        /// Funkcja usuwa ID połączenia danego klienta z listy ID połączeń przypisanej do danego obiektu użytkownika
+        /// </summary>
+        /// <param name="connID">ciąg znakowy reprezentujący ID połączenia danego klienta</param>
+        public void removeConnectionID(string connID)
+        {
+            if (!connectionIDs.Contains(connID))
+                connectionIDs.Remove(connID);
+        }
+
+        /// <summary>
+        /// Funkcja usuwa wszystkie wpisy connectionID dla danego obiektu użytkownika
+        /// </summary>
+        public void removeAllConnectionIDs()
+        {
+            connectionIDs.Clear();
+        }
+
+        /// <summary>
+        /// Funkcja sprawdza czy w liście connectionID znajduje się podane w argumencie ID połączenia
+        /// </summary>
+        /// <param name="connID">ciąg znakowy reprezentujący ID połączenia danego klienta</param>
+        /// <returns>Zwraca boolean reprezentujący wynik zapytania</returns>
+        public bool containsConnectionID(string connID)
+        {
+            return connectionIDs.Contains(connID);
+        }
 
     }
 }
