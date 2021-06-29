@@ -103,6 +103,12 @@ namespace czatSerwerTIN.DBmanager
         {
             return groups.FindAsync("{GroupName: \"" + groupname + "\"}, {Content:1, _id:0}");
         }
+        public async Task SavePrivateMessage(string username, string message, string groupname)
+        {
+            DateTime foo = DateTime.Now;
+            long unixTime = ((DateTimeOffset)foo).ToUnixTimeSeconds();
+            await groups.UpdateOneAsync("{ GroupName:" + groupname + " }", "{ $addToSet: { Content: { Sender: " + username + ", Time: " + unixTime.ToString() + ", Message: " + message + "} } }", "{upsert: true}");
+        }
 
 
         public Task<IAsyncCursor<BsonDocument>> GetUsers()
