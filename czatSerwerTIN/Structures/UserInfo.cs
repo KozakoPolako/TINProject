@@ -26,7 +26,7 @@ namespace czatSerwerTIN.Structures
         /// <summary>
         /// Funkcja dodaje ID połączenia klienta do listy ID połączeń przypisanej do danego obiektu użytkownika
         /// </summary>
-        /// <param name="connID">ciąg znakowy reprezentujący ID połączenia danego klienta</param>
+        /// <param name="connID">Ciąg znakowy reprezentujący ID połączenia danego klienta</param>
         public void addConnectionID(string connID)
         {
             if(!connectionIDs.Contains(connID))
@@ -36,7 +36,7 @@ namespace czatSerwerTIN.Structures
         /// <summary>
         /// Funkcja usuwa ID połączenia danego klienta z listy ID połączeń przypisanej do danego obiektu użytkownika
         /// </summary>
-        /// <param name="connID">ciąg znakowy reprezentujący ID połączenia danego klienta</param>
+        /// <param name="connID">Ciąg znakowy reprezentujący ID połączenia danego klienta</param>
         public void removeConnectionID(string connID)
         {
             if (!connectionIDs.Contains(connID))
@@ -54,11 +54,20 @@ namespace czatSerwerTIN.Structures
         /// <summary>
         /// Funkcja sprawdza czy w liście connectionID znajduje się podane w argumencie ID połączenia
         /// </summary>
-        /// <param name="connID">ciąg znakowy reprezentujący ID połączenia danego klienta</param>
+        /// <param name="connID">Ciąg znakowy reprezentujący ID połączenia danego klienta</param>
         /// <returns>Zwraca boolean reprezentujący wynik zapytania</returns>
-        public bool containsConnectionID(string connID)
+        public bool hasConnectionID(string connID)
         {
             return connectionIDs.Contains(connID);
+        }
+
+        /// <summary>
+        /// Funkcja zwraca liczbę aktywnych połączeń w ramach danego użytkownika
+        /// </summary>
+        /// <returns></returns>
+        public int activeUsersCount()
+        {
+            return connectionIDs.Count();
         }
 
     }
