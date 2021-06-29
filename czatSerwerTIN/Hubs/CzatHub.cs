@@ -75,9 +75,9 @@ namespace czatSerwerTIN.Hubs
             await mongo.RemoveUserFromGroup(name, grupname);
         }
 
-        public async Task SendPrivateMessage(string sender, string receiver, string message)
+        public async Task SendPrivateMessage(string sender, string destination, string message)
         {
-            await Clients.Group(receiver + "_user").SendAsync("ReceiveMessage", sender, message);
+            await Clients.Group(destination + "_user").SendAsync("ReceiveMessage", sender, destination, message);
            // await Clients.Group(sender + "_user").SendAsync("ReceiveMessage", sender, message);
         }
 
