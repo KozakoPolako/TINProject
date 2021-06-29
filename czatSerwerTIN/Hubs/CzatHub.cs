@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.SignalR;
 using System.Text.Json;
 using MongoDB.Driver;
 using MongoDB.Bson;
+using czatSerwerTIN.Structures;
 
 namespace czatSerwerTIN.Hubs
 {
@@ -18,6 +19,8 @@ namespace czatSerwerTIN.Hubs
 
         // połaczenie z baządanyc 
         MongoConnect mongo = new MongoConnect();
+
+        static List<GroupInfo> groupInfoList = new();
 
         public async Task SendMessage(string user, string message)
         {
@@ -108,6 +111,28 @@ namespace czatSerwerTIN.Hubs
             await GetUsers();
             await base.OnDisconnectedAsync(exception);
             
+        }
+
+        public async Task getMessageByGroup(string groupName, string groupType)
+        {
+            
+        }
+
+        public async Task getGroupsByUser(string userName)
+        {
+            List<string> list = new List<string>();
+
+            foreach(GroupInfo g in groupInfoList)
+            {
+                if(g.userInfoList.Exists(u => u.userName.Equals(userName)))
+                {
+                    list.Add(g.groupName);
+                }
+            }
+
+            var json = JsonSerializer.Serialize(list);
+
+            await Clients.Caller.SendAsync("ReciveGroupList", json);
         }
     }
 }
