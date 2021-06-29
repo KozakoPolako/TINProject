@@ -6,6 +6,30 @@ let username;
 const selected = { item: "none" , type:"none"};
 let activeUsers;
 const loginBtn = document.querySelector(".loginBtn");
+//zbior konwersacji
+const messages = new Set(); 
+//konwersacja 
+class conversation{
+    
+    constructor(groupname, type) {
+        this.groupName = groupname;
+        this.type = type;
+        this.content = new Set();
+    }
+    addMessage(message){
+        this.content.add(message);
+    }
+}
+//wiadomosc
+class message{
+    constructor(sender, time, message) {
+        this.sender = sender;
+        this.time = time;
+        this.message = message;
+    }
+}
+
+
 
 
 console.log(signalR);
@@ -152,7 +176,7 @@ const prepareWindow=function() {
     //container.appendChild(messegeInput);
     //container.appendChild(sendMessege);
 
-    connection.on("ReceiveMessage", function (user, message) {
+    connection.on("ReceiveMessage", function (user, destination, message) {
         const msg = document.createElement("p");
         
         messegesView.appendChild(msg);
@@ -186,6 +210,17 @@ const prepareWindow=function() {
         //activeUsers  = JSON.parse(json);
         //console.dir(activeUsers);
         buildGroupsList(json);
+    } );
+
+    connection.on("ReciveMessagesByGroup" ,  json => {
+        const conv = JSON.parse(json);
+        messages.forEach(obj =>{
+            if (obj.groupName === conv.groupName) messages.delete(obj);
+        });
+
+        messages.add(conv);
+
+        showMessages(conv);
     } );
 
     join.addEventListener("click", addToGroup);
@@ -308,9 +343,11 @@ const getSelected = function() {
 
         selected.item =this.innerHTML;
         if(this.parentNode.id === "usersList") {
+            buildConversation(selected.item,"private");
             selected.type = "user";
         }else {
             document.querySelector(".joinBTN").innerHTML ="<p>LEAVE</p>";
+            buildConversation(selected.item,"group");
             selected.type = "group";
         }
         this.classList.add("selected");
@@ -375,4 +412,47 @@ const addToGroup = function() {
         });
     }
     
+}
+
+const buildConversation = function(convName,type){
+
+    
+    connection.invoke("getMessagesByGroup",convName,type)
+                    .catch(err => console.error(err.toString()));
+
+    const messagesView = document.querySelector(".messegesView");
+    const children = Array.prototype.slice.call(messagesView.children);
+    children.forEach(el => el.remove());
+}
+const showMessages = function(conv){
+
+    const messegesView = document.querySelector(".messegesView");
+    
+    conv.content.forEach(el =>{
+        const msg = document.createElement("p");
+        
+        messegesView.appendChild(msg);
+        if(el.sender === username) {
+            user = "You";
+            msg.style.width="80%";
+            msg.style.float="right";
+            msg.style.textAlign="right";
+            msg.style.marginRight="3px";
+            msg.style.color="#03A062";
+        }else{
+            msg.style.width="80%";
+            msg.style.float="left";
+            msg.style.textAlign="left";
+            msg.style.marginLeft="3px";
+            msg.style.color="white";
+        }
+        
+        msg.innerHTML = `<span style="color: #00bfff;">${el.sender}:</span><span>${el.message}</span>`;
+    });
+    //skrolowanie listy wiadomości do dołu 
+    messegesView.scrollTop = messegesView.scrollHeight;
+    
+    
+    
+
 }
