@@ -112,11 +112,11 @@ namespace czatSerwerTIN.Hubs
             await base.OnDisconnectedAsync(exception);
             
         }
-
+        /*
         public async Task getMessageByGroup(string groupName, string groupType)
         {
             
-        }
+        }*/
 
         public async Task getGroupsByUser(string userName)
         {

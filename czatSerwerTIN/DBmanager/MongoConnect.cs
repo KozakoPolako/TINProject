@@ -107,7 +107,8 @@ namespace czatSerwerTIN.DBmanager
         {
             DateTime foo = DateTime.Now;
             long unixTime = ((DateTimeOffset)foo).ToUnixTimeSeconds();
-            await groups.UpdateOneAsync("{ GroupName:" + groupname + " }", "{ $addToSet: { Content: { Sender: " + username + ", Time: " + unixTime.ToString() + ", Message: " + message + "} } }", "{upsert: true}");
+            var options = new UpdateOptions { IsUpsert = true };
+            await groups.UpdateOneAsync("{ GroupName:" + groupname + " }", "{ $addToSet: { Content: { Sender: " + username + ", Time: " + unixTime.ToString() + ", Message: " + message + "} } }", options);
         }
 
 
