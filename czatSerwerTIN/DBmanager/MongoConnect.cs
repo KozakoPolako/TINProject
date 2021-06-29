@@ -88,7 +88,21 @@ namespace czatSerwerTIN.DBmanager
             var filter = Builders<BsonDocument>.Filter.Eq("GroupName", groupname);
             return groups.FindAsync(filter);
         }
-
+        public async Task SaveMessage(string username, string message, string groupname)
+        {
+            DateTime foo = DateTime.Now;
+            long unixTime = ((DateTimeOffset)foo).ToUnixTimeSeconds();
+            await groups.UpdateOneAsync("{ GroupName:" + groupname + " }", "{ $addToSet: { Content: { Sender: " + username + ", Time: " + unixTime.ToString() + ", Message: " + message + "} } }");
+        }
+        /// <summary>
+        /// Wczytuje wszystkie wiadomosci z danego groupname z bazy danych. Zwrotka jest w postaci <IAsyncCursor<BsonDocument>
+        /// </summary>
+        /// <param name="groupname"></param>
+        /// <returns></returns>
+        public Task<IAsyncCursor<BsonDocument>> LoadMessagesByGroupName(string groupname)
+        {
+            return groups.FindAsync("{GroupName: " + groupname + "}, {Content:1, _id:0}");
+        }
         public Task<IAsyncCursor<BsonDocument>> GetUsers()
         {
 
