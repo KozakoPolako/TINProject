@@ -50,6 +50,21 @@ input{
     background-color:black;
     width:200px;
     height:30px;
+    margin-top: 20px;
+    text-align: center;
+    border-color: white;
+    border-radius: 3px;
+}
+.logo{
+    height:400px;
+}
+.passwordInput{
+    
+    color:white;
+    background-color:black;
+    width:200px;
+    height:30px;
+    margin-top: 5px;
     //margin: 10px;
     text-align: center;
     border-color: white;
@@ -64,6 +79,7 @@ input{
     text-align: center;
     border-color: white;
     border-radius: 3px;
+    margin-bottom: 100px;
 }
 
 .messegesView{

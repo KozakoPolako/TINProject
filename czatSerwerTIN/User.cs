@@ -13,13 +13,13 @@ namespace czatSerwerTIN
         [BsonId]
         [BsonRepresentation(MongoDB.Bson.BsonType.ObjectId)]
         
-        public string connID { get; set; }
+       // public string connID { get; set; }
         public string name { get; set; }
         public string isActive { get; set; }
-        public User(string name, string connID, string isActive)
+        public User(string name, string isActive)
         {
             this.name = name;
-            this.connID = connID;
+            //this.connID = connID;
             this.isActive = isActive;
         }
     }

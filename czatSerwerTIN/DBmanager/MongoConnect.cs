@@ -28,21 +28,36 @@ namespace czatSerwerTIN.DBmanager
         }
 
         // dodaje nowego użytkownika tylko w sytuacji kiedy nie istnieje dokument o kluczu Name = name 
-        public Task InsertUser(string name, string connID)
+        public async Task<bool> InsertUser(string name, string password)
         {
-            /* var document = new BsonDocument
-             {
-                 { "Name",name},
-                 {BulkWriteUpsert. }
-             };*/
+            bool status = false;
+            int usrCount = 0;
 
-
-            var filter = Builders<BsonDocument>.Filter.Eq("Name", name);
-            var update = Builders<BsonDocument>.Update.Set("Name", name)
-                .Set("ConnID", connID)
-                .Set("IsActive", "true");
-            var options = new UpdateOptions { IsUpsert = true };
-            return users.UpdateOneAsync(filter, update, options);
+            var cursor = await users.FindAsync("{Name: {$eq: \""+name+"\"}}");
+            await cursor.ForEachAsync(user => {
+                if (user["Password"].AsString == password) status = true;
+                usrCount++;
+            });
+            // konto nie istnieje 
+            if (usrCount == 0)
+            {
+                var filter = Builders<BsonDocument>.Filter.Eq("Name", name);
+                var update = Builders<BsonDocument>.Update.Set("Password", password)
+                    .Set("IsActive", "true");
+                var options = new UpdateOptions { IsUpsert = true };
+                await users.UpdateOneAsync(filter, update, options);
+                status = true;
+            }else
+            // podano prawidłowe dane logowania 
+            if (usrCount == 1 && status)
+            {
+                var filter = Builders<BsonDocument>.Filter.Eq("Name", name);
+                var update = Builders<BsonDocument>.Update.Set("IsActive", "true");
+                var options = new UpdateOptions { IsUpsert = true };
+                await users.UpdateOneAsync(filter, update, options);
+            }else { status = false; }
+            
+            return status;
         }
 
         public Task AddUserToGroup(string name, string groupName)
@@ -59,11 +74,11 @@ namespace czatSerwerTIN.DBmanager
         {
             return groups.UpdateOneAsync("{GroupName: \"" + groupName + "\"}","{$pull: {Members: \""+name+"\"}}");
         }
-        public Task LogoutUser(string connID)
+        public Task LogoutUser(string username)
         {
 
 
-            var filter = Builders<BsonDocument>.Filter.Eq("ConnID", connID);
+            var filter = Builders<BsonDocument>.Filter.Eq("Name", username);
             var update = Builders<BsonDocument>.Update.Set("IsActive", "false");
 
             return users.UpdateOneAsync(filter, update);
@@ -104,6 +119,7 @@ namespace czatSerwerTIN.DBmanager
         {
             var filter = Builders<BsonDocument>.Filter.Eq("IsActive", "true");
             var update = Builders<BsonDocument>.Update.Set("IsActive", "false");
+                
             return users.UpdateManyAsync(filter, update);
         }
 

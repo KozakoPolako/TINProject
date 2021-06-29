@@ -39,18 +39,16 @@ connection.start().then( () => {
 
 loginBtn.addEventListener("click", (event) => {
     username = document.querySelector(".userNameInput").value;
-    prepareWindow();
-    console.log("Zalogowano");
-    connection.invoke("Login",username)
+    
+    //console.log("Zalogowano");
+    connection.invoke("Login",username, document.querySelector(".passwordInput").value)
         .catch(err => console.error(err.toString()));
     
-
-    connection.invoke("GetUsers")
-        .catch(err => console.error(err.toString()));
+    
+    
     event.preventDefault();
 
-    connection.invoke("GetGroups",username)
-        .catch(err => console.error(err.toString()));
+    
     
 })
 
@@ -62,6 +60,27 @@ document.querySelector(".userNameInput").addEventListener("keyup", (event) => {
         loginBtn.click();
     } 
 })
+
+connection.on("LoginStatus", function(status) {
+    console.dir(status);
+    if (status) {
+        prepareWindow();
+        connection.invoke("GetUsers")
+            .catch(err => console.error(err.toString()));
+        connection.invoke("GetGroups",username)
+            .catch(err => console.error(err.toString()));
+    }else 
+    {
+        loginBtn.style.color = "red";
+        loginBtn.value="ERROR";
+        document.querySelector(".passwordInput").addEventListener("input", ()=> {
+            loginBtn.style.color = "white";
+            loginBtn.value="LOGIN";
+        });
+    }
+});
+
+
 
 
 
