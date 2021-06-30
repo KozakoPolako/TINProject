@@ -92,22 +92,26 @@ namespace czatSerwerTIN.Hubs
             //Console.WriteLine("Działam =" + userName);
         }
 
-        public async Task AddUserToGroup(string name, string groupName) 
+        public async Task AddUserToGroup(string userName, string groupName) 
         {
-            await mongo.AddUserToGroup(name, groupName);
+            await mongo.AddUserToGroup(userName, groupName);
             UserInfo usr = userInfoList.First(u => u.hasConnectionID(Context.ConnectionId));
-            foreach(string connID in usr.connectionIDs)
+            var json = JsonSerializer.Serialize(await mongo.GetGroups(userName));
+            foreach (string connID in usr.connectionIDs)
             {
                 await Groups.AddToGroupAsync(connID, groupName);
+                await Clients.Client(connID).SendAsync("ReceiveGroupList", json);
             }
         }
-        public async Task RemoveUserFromGroup(string name, string groupName)
+        public async Task RemoveUserFromGroup(string userName, string groupName)
         {
-            await mongo.RemoveUserFromGroup(name, groupName);
+            await mongo.RemoveUserFromGroup(userName, groupName);
             UserInfo usr = userInfoList.First(u => u.hasConnectionID(Context.ConnectionId));
+            var json = JsonSerializer.Serialize(await mongo.GetGroups(userName));
             foreach (string connID in usr.connectionIDs)
             {
                 await Groups.RemoveFromGroupAsync(connID, groupName);
+                await Clients.Client(connID).SendAsync("ReceiveGroupList", json);
             }
         }
 
