@@ -22,7 +22,11 @@ namespace czatSerwerTIN.Startup
         public void ConfigureServices(IServiceCollection services)
         {
             
-            services.AddSignalR();
+            services.AddSignalR(hubOptions =>
+            {
+                hubOptions.EnableDetailedErrors = true;
+                hubOptions.MaximumReceiveMessageSize = 20971520;
+            });
             services.AddCors(options =>
             {
                 options.AddDefaultPolicy(builder =>
@@ -40,7 +44,11 @@ namespace czatSerwerTIN.Startup
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapHub<CzatHub>("/czatHub");
+                endpoints.MapHub<CzatHub>("/czatHub", options => 
+                {
+                    options.ApplicationMaxBufferSize = 20971520;
+                    options.TransportMaxBufferSize = 20971520;
+                });
             });
         }
     }
