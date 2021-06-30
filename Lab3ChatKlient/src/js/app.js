@@ -6,6 +6,8 @@ let username;
 const selected = { item: "none" , type:"none"};
 let activeUsers;
 const loginBtn = document.querySelector(".loginBtn");
+
+const unseen = new Set();
 //zbior konwersacji
 const messages = new Set(); 
 //konwersacja 
@@ -40,6 +42,7 @@ var connection =connection = new signalR.HubConnectionBuilder()
   skipNegotiation: true,
   transport: signalR.HttpTransportType.WebSockets
 })
+.withAutomaticReconnect()
 .build();
 
 
@@ -201,6 +204,11 @@ const prepareWindow=function() {
         //skrolowanie listy wiadomości do dołu 
         messagesView.scrollTop = messagesView.scrollHeight;
         msg.innerHTML = `<span style="color: #00bfff;">${message.sender}:</span><span>${message.msg}</span>`;
+        }else {
+            const name = document.getElementById(destination);
+            name.classList.add("unseen");
+            unseen.add(destination);
+
         }
         
     });
@@ -229,6 +237,11 @@ const prepareWindow=function() {
         //skrolowanie listy wiadomości do dołu 
         messagesView.scrollTop = messagesView.scrollHeight;
         msg.innerHTML = `<span style="color: #00bfff;">${message.sender}:</span><span>${message.msg}</span>`;
+        }else if(destination != username){
+
+            const name = document.getElementById(destination);
+            name.classList.add("unseen");
+
         }
         
     });
@@ -315,6 +328,10 @@ const buildUsersList = function(json) {
     Users.forEach(el => {
         user = document.createElement("p");
         user.innerHTML = el.name;
+        user.id = el.name;
+        if (unseen.has(el.name)) {
+            user.classList.add("unseen");
+        }
         if (el.isActive === "True" ) {
             user.style.color="#03A062";
         }else {
@@ -348,34 +365,56 @@ const buildGroupsList = function(json) {
     children.forEach(el => el.remove());
 
     console.log("grupy");
+    let flag = true;
     let group;
     const Groups = JSON.parse(json);
     console.dir(Groups);
     Groups.forEach(el => {
         group = document.createElement("p");
         group.innerHTML = el;
+        console.log("Nazwa :::::"+el);
+        group.id = el+"";
         group.style.color="white";
+        if (unseen.has(el)) {
+            group.classList.add("unseen");
+        }
         if (el === selected.item) {
+            flag = false;
             group.classList.add("selected");
         }
         group.addEventListener("click",getSelected);
         usersList.appendChild(group);
         
     });
+    console.log("flag",flag," type",selected.type);
+    if (flag === true && selected.type !== "user"){
+        abortion();
+    }
 }
 
 const getSelected = function() {
 
     document.querySelector(".joinBTN").innerHTML ="<p>JOIN</p>";
 
-    //    
+    if (selected.item !== "none"){
+        console.log("działam tutaj przy zmianie");
+        document.getElementById(selected.item).classList.remove("unseen");
+        console.dir(document.getElementById(selected.item));
+        unseen.delete(selected.item);
+    }
+        
     //console.dir(this);
+    //this.classList.remove("unseen");
+    
     const sel = document.querySelector(".selected");
+    
     if ( sel ){
         sel.classList.remove("selected");
     }
     ;
     if (selected.item === this.innerHTML) {
+        
+        this.color ="white";
         selected.item = "none";
         selected.type = "none";
     }else{
@@ -404,8 +443,9 @@ const addToGroup = function() {
 
         connection.invoke("RemoveUserFromGroup",username,selected.item)
             .catch(err => console.error(err.toString()));
-        connection.invoke("getGroupsByUser",username)
-            .catch(err => console.error(err.toString()));
+        
+        //connection.invoke("getGroupsByUser",username)
+        //    .catch(err => console.error(err.toString()));
         selected.item ="none";
         selected.type ="none";
         document.querySelector(".joinBTN").innerHTML ="<p>JOIN</p>";
@@ -444,8 +484,8 @@ const addToGroup = function() {
             
                 connection.invoke("AddUserToGroup",username,groupInput.value)
                     .catch(err => console.error(err.toString()));
-                connection.invoke("getGroupsByUser",username)
-                    .catch(err => console.error(err.toString()));
+                //connection.invoke("getGroupsByUser",username)
+                //    .catch(err => console.error(err.toString()));
                 window.remove();
             }
         });
@@ -459,9 +499,7 @@ const buildConversation = function(convName,type){
     connection.invoke("getMessagesByGroup",convName,type)
                     .catch(err => console.error(err.toString()));
 
-    const messagesView = document.querySelector(".messagesView");
-    const children = Array.prototype.slice.call(messagesView.children);
-    children.forEach(el => el.remove());
+    abortion();
 }
 const showMessages = function(conv){
     console.log("Działam tutaj");
@@ -497,4 +535,9 @@ const showMessages = function(conv){
     
     
 
+}
+const abortion = function(){
+    const messagesView = document.querySelector(".messagesView");
+    const children = Array.prototype.slice.call(messagesView.children);
+    children.forEach(el => el.remove());
 }
