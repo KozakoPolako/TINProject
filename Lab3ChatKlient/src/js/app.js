@@ -1,6 +1,38 @@
-
 import  * as signalR  from "@microsoft/signalr";
+// import * as RTCPeerConnection from "../../node_modules/rtcpeerconnection";
 
+// const configuration = {iceServers: [{urls: 'stun:stun.l.google.com:19302'}]};
+
+// const pc = new RTCPeerConnection(null);
+// pc.onaddstream = gotRemoteStream;
+// pc.addStream(localStream);
+// pc.createOffer(gotOffer);
+
+// function gotOffer(desc) {
+  // pc.setLocalDescription(desc);
+  // sendOffer(desc);
+// }
+
+// function gotAnswer(desc) {
+  // pc.setRemoteDescription(desc);
+// }
+
+// function gotRemoteStream(e) {
+  // attachMediaStream(remoteAudio, e.stream);
+// }
+
+// // Success callback when requesting audio input stream
+// function gotStream(stream) {
+    // var audioContext = new webkitAudioContext();
+
+    // // Create an AudioNode from the stream
+    // var mediaStreamSource = audioContext.createMediaStreamSource(stream);
+
+    // // Connect it to the destination or any other node for processing!
+    // mediaStreamSource.connect(audioContext.destination);
+// }
+
+// //navigator.webkitGetUserMedia({audio:true}, gotStream);
 
 let username;
 const selected = { item: "none" , type:"none"};
@@ -124,6 +156,7 @@ const prepareWindow=function() {
     
     const groupsList = document.createElement("div");
     const usersList = document.createElement("div");
+	const callBtn = document.createElement("div");
 
     const messegesView = document.createElement("div");
     const messegeInput = document.createElement("input");
@@ -138,6 +171,8 @@ const prepareWindow=function() {
     div1.style.width="100%";
     div1.style.display="flex";
     div2.style.width="100%";
+	
+	callBtn.classList.add("joinBTN");
 
     appPanel.classList.add("appPanel");
 
@@ -155,7 +190,7 @@ const prepareWindow=function() {
     join.classList.add("joinBTN")
     sendMessege.innerHTML = "<p>SEND</p>";
     join.innerHTML = "<p>JOIN</p>";
-    
+	callBtn.innerHTML = "<p>Call user</p>";
     
     container.appendChild(messegesView);
     container.appendChild(breakLine);
@@ -170,6 +205,10 @@ const prepareWindow=function() {
     appPanel.appendChild(div3);
     appPanel.appendChild(container);
     appPanel.appendChild(usersList);
+	
+	// Add call button
+	container.appendChild(breakLine);
+    container.appendChild(callBtn);
 
     document.querySelector(".content").appendChild(appPanel);
     //container.appendChild(appPanel);
@@ -224,6 +263,11 @@ const prepareWindow=function() {
     } );
 
     join.addEventListener("click", addToGroup);
+	
+	callBtn.addEventListener("click", (params) => {
+		// TODO-0101
+		callBtn.innerHTML = "<p>Called user</p>";
+	})
     
     document.querySelector(".sendMessege").addEventListener("click", (event) => {
         const message = document.querySelector(".messegeInput").value;

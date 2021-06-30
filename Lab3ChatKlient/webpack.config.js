@@ -9,6 +9,11 @@ module.exports = {
     watch: false,
     mode: 'production',
     devtool: "source-map",
+	resolve: {
+		fallback: {
+			util: require.resolve("util/")
+		}
+	},
     module: {
         rules: [
             {

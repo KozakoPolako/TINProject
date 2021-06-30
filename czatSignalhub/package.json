@@ -1,0 +1,14 @@
+{
+  "name": "czatsignalhub",
+  "version": "1.0.0",
+  "description": "SignalHub handshake server for voice",
+  "main": "index.js",
+  "scripts": {
+    "signalhub": "signalhub listen -p 3020"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "signalhub": "^4.9.0"
+  }
+}

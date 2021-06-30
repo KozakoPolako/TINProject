@@ -41,6 +41,7 @@ namespace czatSerwerTIN.Startup
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapHub<CzatHub>("/czatHub");
+                endpoints.MapHub<ConnectionHub>("/connectionHub");
             });
         }
     }
