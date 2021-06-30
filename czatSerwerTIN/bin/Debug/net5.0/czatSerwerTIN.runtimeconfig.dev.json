@@ -1,8 +1,8 @@
 {
   "runtimeOptions": {
     "additionalProbingPaths": [
-      "C:\\Users\\darex\\.dotnet\\store\\|arch|\\|tfm|",
-      "C:\\Users\\darex\\.nuget\\packages"
+      "C:\\Users\\leejo\\.dotnet\\store\\|arch|\\|tfm|",
+      "C:\\Users\\leejo\\.nuget\\packages"
     ]
   }
 }

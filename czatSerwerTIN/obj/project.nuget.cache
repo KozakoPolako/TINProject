@@ -1,19 +1,19 @@
 {
   "version": 2,
-  "dgSpecHash": "Ce3Gs7e5F0zjHfWJPxdUytV2yopUPDUMldg2tBG3x/tUEVk6+nwHshlZddtDR3AYUUfRYzL4l8cj57ZNjTMLYg==",
+  "dgSpecHash": "QvzUSTQ+uO6D6RFwbqEa4gjlpedNUHT+Z/Y61XT60/GdOflpiEEZsljbtsnaaHFDMuFQVgphVgl0TyFKQBoNpQ==",
   "success": true,
-  "projectFilePath": "C:\\Workspace\\TINlab3\\czatSerwerTIN\\czatSerwerTIN.csproj",
+  "projectFilePath": "C:\\Users\\leejo\\source\\repos\\TINProjectWS\\czatSerwerTIN\\czatSerwerTIN.csproj",
   "expectedPackageFiles": [
-    "C:\\Users\\darex\\.nuget\\packages\\dnsclient\\1.4.0\\dnsclient.1.4.0.nupkg.sha512",
-    "C:\\Users\\darex\\.nuget\\packages\\microsoft.netcore.platforms\\2.1.2\\microsoft.netcore.platforms.2.1.2.nupkg.sha512",
-    "C:\\Users\\darex\\.nuget\\packages\\mongodb.bson\\2.12.4\\mongodb.bson.2.12.4.nupkg.sha512",
-    "C:\\Users\\darex\\.nuget\\packages\\mongodb.driver\\2.12.4\\mongodb.driver.2.12.4.nupkg.sha512",
-    "C:\\Users\\darex\\.nuget\\packages\\mongodb.driver.core\\2.12.4\\mongodb.driver.core.2.12.4.nupkg.sha512",
-    "C:\\Users\\darex\\.nuget\\packages\\mongodb.libmongocrypt\\1.2.1\\mongodb.libmongocrypt.1.2.1.nupkg.sha512",
-    "C:\\Users\\darex\\.nuget\\packages\\sharpcompress\\0.23.0\\sharpcompress.0.23.0.nupkg.sha512",
-    "C:\\Users\\darex\\.nuget\\packages\\system.buffers\\4.5.1\\system.buffers.4.5.1.nupkg.sha512",
-    "C:\\Users\\darex\\.nuget\\packages\\system.runtime.compilerservices.unsafe\\5.0.0\\system.runtime.compilerservices.unsafe.5.0.0.nupkg.sha512",
-    "C:\\Users\\darex\\.nuget\\packages\\system.text.encoding.codepages\\4.5.1\\system.text.encoding.codepages.4.5.1.nupkg.sha512"
+    "C:\\Users\\leejo\\.nuget\\packages\\dnsclient\\1.4.0\\dnsclient.1.4.0.nupkg.sha512",
+    "C:\\Users\\leejo\\.nuget\\packages\\microsoft.netcore.platforms\\2.1.2\\microsoft.netcore.platforms.2.1.2.nupkg.sha512",
+    "C:\\Users\\leejo\\.nuget\\packages\\mongodb.bson\\2.12.4\\mongodb.bson.2.12.4.nupkg.sha512",
+    "C:\\Users\\leejo\\.nuget\\packages\\mongodb.driver\\2.12.4\\mongodb.driver.2.12.4.nupkg.sha512",
+    "C:\\Users\\leejo\\.nuget\\packages\\mongodb.driver.core\\2.12.4\\mongodb.driver.core.2.12.4.nupkg.sha512",
+    "C:\\Users\\leejo\\.nuget\\packages\\mongodb.libmongocrypt\\1.2.1\\mongodb.libmongocrypt.1.2.1.nupkg.sha512",
+    "C:\\Users\\leejo\\.nuget\\packages\\sharpcompress\\0.23.0\\sharpcompress.0.23.0.nupkg.sha512",
+    "C:\\Users\\leejo\\.nuget\\packages\\system.buffers\\4.5.1\\system.buffers.4.5.1.nupkg.sha512",
+    "C:\\Users\\leejo\\.nuget\\packages\\system.runtime.compilerservices.unsafe\\5.0.0\\system.runtime.compilerservices.unsafe.5.0.0.nupkg.sha512",
+    "C:\\Users\\leejo\\.nuget\\packages\\system.text.encoding.codepages\\4.5.1\\system.text.encoding.codepages.4.5.1.nupkg.sha512"
   ],
   "logs": []
 }

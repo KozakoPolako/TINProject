@@ -9,7 +9,9 @@ using System.Threading.Tasks;
 namespace czatSerwerTIN.DBmanager
 {
 
-
+    /// <summary>
+    /// Klasa-kontroler dla połączenia z bazą danych
+    /// </summary>
     public class MongoConnect
     {
         string CONNECTION_STRING = "mongodb://darekddd:Password1!@localhost:2717";
@@ -19,6 +21,10 @@ namespace czatSerwerTIN.DBmanager
         IMongoCollection<BsonDocument> users;
         IMongoCollection<BsonDocument> groups;
 
+        /// <summary>
+        /// Publiczny konstruktor, przy utworzeniu obiektu inicjalizuje połączenie
+        /// i pobiera z bazy danych listę użytkowników i grup
+        /// </summary>
         public MongoConnect()
         {
             client = new MongoClient(CONNECTION_STRING);
@@ -27,7 +33,13 @@ namespace czatSerwerTIN.DBmanager
             groups = database.GetCollection<BsonDocument>("groups");
         }
 
-        // dodaje nowego użytkownika tylko w sytuacji kiedy nie istnieje dokument o kluczu Name = name 
+        /// <summary>
+        /// Gdy nie istnieje dokument o kluczu <c>Name = name</c>, dodaje nowego użytkownika
+        /// do bazy danych
+        /// </summary>
+        /// <param name="name">Nazwa dodawanego użytkownika</param>
+        /// <param name="password">Hasło (plaintext) nowego użytkownika</param>
+        /// <returns>Zadanie zwraca boolean w zależności od powodzenia operacji</returns>
         public async Task<bool> InsertUser(string name, string password)
         {
             bool status = false;
@@ -61,6 +73,13 @@ namespace czatSerwerTIN.DBmanager
             return status;
         }
 
+        /// <summary>
+        /// Dodawanie użytkownika do grupy, jeśli grupa nie istnieje w bazie danych,
+        /// zostaje utworzona
+        /// </summary>
+        /// <param name="name">Nazwa dodawanego użytkownika</param>
+        /// <param name="groupName">Nazwa grupy docelowej</param>
+        /// <returns>Zadanie</returns>
         public Task AddUserToGroup(string name, string groupName)
         {
             //var filter = Builders<BsonDocument>.Filter.Eq("GroupName", groupName);
@@ -87,15 +106,24 @@ namespace czatSerwerTIN.DBmanager
         //    var filter = Builders<BsonDocument>.Filter.Eq("GroupName", groupname);
         //    return groups.FindAsync(filter);
         //}
+
+        /// <summary>
+        /// Zapisuje wiadomość wysłaną do grupy <c>groupName</c> w bazie danych
+        /// </summary>
+        /// <param name="message">Treść wysłanej i zapisywanej wiadomości</param>
+        /// <param name="groupname">Nazwa grupy, w której czacie dodano wiadomość</param>
+        /// <returns>Zadanie</returns>
         public async Task SaveGroupMessage(Message message, string groupname)
         {
             await groups.UpdateOneAsync("{ GroupName:\"" + groupname + "\", Type: \"Public\" }", "{ $addToSet: { Content: { Sender: \"" + message.sender + "\", Time: " + message.timeSent + ", Type: \"" + message.type + "\", Message: \"" + message.msg + "\"} } }");
         }
+
         /// <summary>
-        /// Wczytuje wszystkie wiadomosci z danego groupname z bazy danych. Zwraca obiekt Group
+        /// Wczytuje wszystkie wiadomosci z danego <c>groupName</c> z bazy danych
         /// </summary>
-        /// <param name="groupname"></param>
-        /// <returns></returns>
+        /// <param name="groupName">Nazwa grupy, o której historię wiadomości pytana jest baza danych</param>
+        /// <param name="groupType">private lub public: Określa czy konwersacja jest grupowa, czy prywatna</param>
+        /// <returns>Zadanie zwraca obiekt zawierający wiadomości dla grupy</returns>
         public async Task<Group> LoadMessagesByGroupName(string groupName, string groupType)
         {
             Group group = new Group(groupName, groupType);
@@ -124,12 +152,24 @@ namespace czatSerwerTIN.DBmanager
             }
             return group;
         }
+
+        /// <summary>
+        /// Zapisuje wiadomośc do grupy dwuosobowej (prywatną), składającej się z użytkownika
+        /// wysyłającego i innego użytkownika czatu
+        /// </summary>
+        /// <param name="message">Treść wysłanej wiadomości</param>
+        /// <param name="groupname">Nazwa grupy dwóch użytkowników</param>
+        /// <returns>Zadanie</returns>
         public async Task SavePrivateMessage(Message message, string groupname)
         {
             var options = new UpdateOptions { IsUpsert = true };
             await groups.UpdateOneAsync("{ GroupName: \"" + groupname + "\", Type: \"Private\" }", "{ $addToSet: { Content: { Sender: \"" + message.sender + "\", Time: " + message.timeSent +", Type: \"" + message.type + "\", Message: \"" + message.msg + "\"} } }", options);
         }
 
+        /// <summary>
+        /// Pobierz listę zarejestrowanych użytkowników czatu z bazy danych
+        /// </summary>
+        /// <returns>Listę stringów użytkowników</returns>
         public async Task<List<string>> GetUsers()
         {
             List<string> userList = new();
@@ -143,6 +183,11 @@ namespace czatSerwerTIN.DBmanager
             return userList;
         }
 
+        /// <summary>
+        /// DEPRACATED
+        /// zwraca kursor użytkownika
+        /// </summary>
+        /// <returns></returns>
         public Task<IAsyncCursor<BsonDocument>> GetUsersCursor()
         {
 
@@ -153,6 +198,12 @@ namespace czatSerwerTIN.DBmanager
             return users.FindAsync(_ => true);
 
         }
+
+        /// <summary>
+        /// Zwraca nazwy konwersacji, w których znajduje się użytkownik
+        /// </summary>
+        /// <param name="user">Użytkownik, którego szukane są grupy</param>
+        /// <returns>Lista użytkowników w postaci stringów</returns>
         public async Task<List<string>> GetGroups(string user)
         {
             List<string> list = new List<string>();
@@ -163,6 +214,11 @@ namespace czatSerwerTIN.DBmanager
             return list;
 
         }
+
+        /// <summary>
+        /// Wylogowuje wszystkich użytkowników czatu
+        /// </summary>
+        /// <returns>Zadanie</returns>
         public Task LogoutAll()
         {
             var filter = Builders<BsonDocument>.Filter.Eq("IsActive", "true");
