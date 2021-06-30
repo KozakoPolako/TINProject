@@ -89,7 +89,7 @@ namespace czatSerwerTIN.DBmanager
         //}
         public async Task SaveGroupMessage(Message message, string groupname)
         {
-            await groups.UpdateOneAsync("{ GroupName:\"" + groupname + "\", Type: \"Public\" }", "{ $addToSet: { Content: { Sender: \"" + message.sender + "\", Time: " + message.timeSent + ", Message: \"" + message.msg + "\"} } }");
+            await groups.UpdateOneAsync("{ GroupName:\"" + groupname + "\", Type: \"Public\" }", "{ $addToSet: { Content: { Sender: \"" + message.sender + "\", Time: " + message.timeSent + ", Type: \"" + message.type + "\", Message: \"" + message.msg + "\"} } }");
         }
         /// <summary>
         /// Wczytuje wszystkie wiadomosci z danego groupname z bazy danych. Zwraca obiekt Group
@@ -119,7 +119,7 @@ namespace czatSerwerTIN.DBmanager
             }
             foreach (BsonValue content in contentCursor.Value.AsBsonArray)
             {
-                group.addMessage(new Message(content["Sender"].AsString, content["Message"].AsString, content["Time"].AsInt32));
+                group.addMessage(new Message(content["Sender"].AsString, content["Message"].AsString, content["Type"].AsString, content["Time"].AsInt32));
                 Console.WriteLine($"{content["Sender"].AsString} | {content["Message"].AsString} ");
             }
             return group;
@@ -127,7 +127,7 @@ namespace czatSerwerTIN.DBmanager
         public async Task SavePrivateMessage(Message message, string groupname)
         {
             var options = new UpdateOptions { IsUpsert = true };
-            await groups.UpdateOneAsync("{ GroupName: \"" + groupname + "\", Type: \"Private\" }", "{ $addToSet: { Content: { Sender: \"" + message.sender + "\", Time: " + message.timeSent + ", Message: \"" + message.msg + "\"} } }", options);
+            await groups.UpdateOneAsync("{ GroupName: \"" + groupname + "\", Type: \"Private\" }", "{ $addToSet: { Content: { Sender: \"" + message.sender + "\", Time: " + message.timeSent +", Type: \"" + message.type + "\", Message: \"" + message.msg + "\"} } }", options);
         }
 
         public async Task<List<string>> GetUsers()
