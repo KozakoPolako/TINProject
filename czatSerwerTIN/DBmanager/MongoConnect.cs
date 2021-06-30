@@ -99,25 +99,22 @@ namespace czatSerwerTIN.DBmanager
         public async Task<Group> LoadMessagesByGroupName(string groupName, string groupType)
         {
             Group group = new Group(groupName, groupType);
-            Console.WriteLine("działam     ---------------------------");
             string filter = "{GroupName: \"" + groupName + "\", Type: \"" + groupType + "\"}";
             Console.WriteLine(filter);
-            Console.WriteLine("działam     ---------------------------");
-            //var options = new UpdateOptions { IsUpsert = true };
             var options = new FindOptions <BsonDocument>() { 
                 Projection =Builders<BsonDocument>.Projection
                     .Include("Content")
                     .Exclude("_id")
             };
-
-
             var cursor = await groups.FindAsync(filter,options);
+            var contentCursor = cursor.FirstOrDefault().AsEnumerable();
             
-            await cursor.ForEachAsync(content => 
+            foreach(BsonElement contentE in contentCursor)
             {
+                var content = contentE.ToBsonDocument();
                 group.addMessage(new Message(content["Sender"].AsString, content["Message"].AsString, content["Time"].AsInt64));
                 Console.WriteLine($"{content["Sender"].AsString} | {content["Message"].AsString} ");
-            });
+            }
 
             return group;
         }
