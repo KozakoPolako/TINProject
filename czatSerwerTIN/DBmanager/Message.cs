@@ -28,5 +28,11 @@ namespace czatSerwerTIN.DBmanager
             this.msg = msg;
             this.timeSent = DateTimeOffset.Now.ToUnixTimeSeconds().ToString();
         }
+
+        public void convertTimeSentToDateFormat()
+        {
+            DateTime time = DateTimeOffset.FromUnixTimeSeconds(long.Parse(timeSent)).LocalDateTime;
+            this.timeSent = $"{time.ToShortDateString()} {time.ToShortTimeString()}";
+        }
     }
 }

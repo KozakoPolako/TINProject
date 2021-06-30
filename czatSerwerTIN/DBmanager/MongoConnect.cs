@@ -49,13 +49,14 @@ namespace czatSerwerTIN.DBmanager
                 status = true;
             }else
             // podano prawidłowe dane logowania 
-            if (usrCount == 1 && status)
+            if (usrCount > 1 )
             {
-                var filter = Builders<BsonDocument>.Filter.Eq("Name", name);
-                var update = Builders<BsonDocument>.Update.Set("IsActive", "true");
-                var options = new UpdateOptions { IsUpsert = true };
-                await users.UpdateOneAsync(filter, update, options);
-            }else { status = false; }
+                status = false;
+                //var filter = Builders<BsonDocument>.Filter.Eq("Name", name);
+                //var update = Builders<BsonDocument>.Update.Set("IsActive", "true");
+                //var options = new UpdateOptions { IsUpsert = true };
+                //await users.UpdateOneAsync(filter, update, options);
+            }
             
             return status;
         }
@@ -76,8 +77,6 @@ namespace czatSerwerTIN.DBmanager
         }
         public Task LogoutUser(string username)
         {
-
-
             var filter = Builders<BsonDocument>.Filter.Eq("Name", username);
             var update = Builders<BsonDocument>.Update.Set("IsActive", "false");
 
@@ -88,7 +87,7 @@ namespace czatSerwerTIN.DBmanager
             var filter = Builders<BsonDocument>.Filter.Eq("GroupName", groupname);
             return groups.FindAsync(filter);
         }
-        public async Task SaveMessageGroupMessage(Message message, string groupname)
+        public async Task SaveGroupMessage(Message message, string groupname)
         {
             await groups.UpdateOneAsync("{ GroupName:\"" + groupname + "\", Type: \"Public\" }", "{ $addToSet: { Content: { Sender: \"" + message.sender + "\", Time: " + message.timeSent + ", Message: \"" + message.msg + "\"} } }");
         }
@@ -108,16 +107,26 @@ namespace czatSerwerTIN.DBmanager
 
             return group;
         }
-        public async Task SavePrivateMessage(string username, string message, string groupname)
+        public async Task SavePrivateMessage(Message message, string groupname)
         {
-            DateTime foo = DateTime.Now;
-            long unixTime = ((DateTimeOffset)foo).ToUnixTimeSeconds();
             var options = new UpdateOptions { IsUpsert = true };
-            await groups.UpdateOneAsync("{ GroupName: \"" + groupname + "\", Type: \"Private\" }", "{ $addToSet: { Content: { Sender: \"" + username + "\", Time: " + unixTime.ToString() + ", Message: \"" + message + "\"} } }", options);
+            await groups.UpdateOneAsync("{ GroupName: \"" + groupname + "\", Type: \"Private\" }", "{ $addToSet: { Content: { Sender: \"" + message.sender + "\", Time: " + message.timeSent + ", Message: \"" + message.msg + "\"} } }", options);
         }
 
+        public async Task<List<string>> GetUsers()
+        {
+            List<string> userList = new();
+            var cursor = await users.FindAsync(_ => true);
 
-        public Task<IAsyncCursor<BsonDocument>> GetUsers()
+            await cursor.ForEachAsync(db =>
+            {
+                userList.Add(db["Name"].AsString);
+            });
+
+            return userList;
+        }
+
+        public Task<IAsyncCursor<BsonDocument>> GetUsersCursor()
         {
 
             //var filter = Builders<BsonDocument>.Filter.Eq("IsActive", "true");
@@ -127,20 +136,14 @@ namespace czatSerwerTIN.DBmanager
             return users.FindAsync(_ => true);
 
         }
-        public Task<IAsyncCursor<BsonDocument>> GetGroups(string user)
+        public async Task<List<string>> GetGroups(string user)
         {
+            List<string> list = new List<string>();
 
-            //{Members:{$elemMatch: {$eq:"Darek"}}}
-            //var filter = new BsonDocument {{$elemMatch: {$eq: "Darek"} } };
+            var cursor = await groups.FindAsync("{Members:{$elemMatch: {$eq:\"" + user + "\"}}}");
 
-    //var filter = Builders<BsonDocument>.Filter.ElemMatch(x => x["Members"], user);
-
-
-    //var filter = Builders<>.Filter.ElemMatch( x => x.Name == "test");
-    //var options = new FindOptions {  }; 
-    //Console.WriteLine("jojojjojo");
-
-            return groups.FindAsync("{Members:{$elemMatch: {$eq:\""+user+"\"}}}");
+            await cursor.ForEachAsync(db => list.Add(db["GroupName"].AsString));
+            return list;
 
         }
         public Task LogoutAll()

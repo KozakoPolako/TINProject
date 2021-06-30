@@ -15,7 +15,7 @@ namespace czatSerwerTIN.Structures
         /// <summary>
         /// Lista przechowująca obiekty informacji o użytkownikach, którzy należą do grupy
         /// </summary>
-        public List<UserInfo> userInfoList { get; set; }
+        public List<string> users { get; set; }
 
         /// <summary>
         /// <para>Ciąg znakowy reprezentujący typ grupy/pokoju czatowego</para>
@@ -28,7 +28,7 @@ namespace czatSerwerTIN.Structures
         {
             this.groupName = groupName;
             this.groupType = groupType;
-            userInfoList = new();
+            users = new();
         }
 
         /// <summary>
@@ -38,28 +38,7 @@ namespace czatSerwerTIN.Structures
         /// <returns></returns>
         public bool hasUser(string userName)
         {
-            return userInfoList.Exists(x => x.userName.Equals(userName));
-        }
-
-        /// <summary>
-        /// Funkcja sprawdzająca czy w danej grupie znakduje się połączenie do dowolnego użytkownika o podanym ID
-        /// </summary>
-        /// <param name="connID">Ciąg znakowy reprezentujący ID połączenia danego klienta</param>
-        /// <returns></returns>
-        public bool hasConnectionID(string connID)
-        {
-            return userInfoList.Exists(x => x.hasConnectionID(connID));
-        }
-
-        /// <summary>
-        /// Funkcja zwraca liczbę aktywnych połączeń w ramach danej grupy
-        /// </summary>
-        /// <returns></returns>
-        public int activeUsersCount()
-        {
-            int count = 0;
-            userInfoList.ForEach(u => count += u.activeUsersCount());
-            return count;
+            return users.Exists(u => u.Equals(userName));
         }
     }
 }

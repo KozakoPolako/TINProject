@@ -5,8 +5,6 @@ using System.Threading.Tasks;
 using czatSerwerTIN.DBmanager;
 using Microsoft.AspNetCore.SignalR;
 using System.Text.Json;
-using MongoDB.Driver;
-using MongoDB.Bson;
 using czatSerwerTIN.Structures;
 
 namespace czatSerwerTIN.Hubs
@@ -20,7 +18,29 @@ namespace czatSerwerTIN.Hubs
         // połaczenie z baządanyc 
         MongoConnect mongo = new MongoConnect();
 
-        static List<GroupInfo> groupInfoList = new();
+        static List<UserInfo> userInfoList = new();
+
+        /// <summary>
+        /// Funkcja zwraca liczbę aktywnych połączeń
+        /// </summary>
+        /// <returns></returns>
+        private int activeConnectionsCount()
+        {
+            int count = 0;
+            userInfoList.ForEach(u => count += u.activeUsersCount());
+            return count;
+        }
+
+        private string getPrivateGroupName(string sender, string destination)
+        {
+            int strOrder = string.CompareOrdinal(sender, destination);
+            string groupName = $"{sender}_{destination}";
+            if (strOrder > 0)
+            {
+                groupName = $"{destination}_{sender}";
+            }
+            return groupName;
+        }
 
         public async Task SendMessage(string user, string message)
         {
@@ -30,27 +50,20 @@ namespace czatSerwerTIN.Hubs
         public async Task GetUsers()
         {
             List<User> list = new List<User>();
-            
-            var cursor = await mongo.GetUsers();
+            foreach(string userName in await mongo.GetUsers())
+            {
+                UserInfo usr = userInfoList.FirstOrDefault(u => u.userName.Equals(userName));
+                list.Add(new User(userName, (usr != null).ToString()));
+            }
 
-            //TRZEBA NAPRAWIĆ IsActive powinno być boolean ale zawsze wtedy dawało true
-            //await cursor.ForEachAsync(db => list.Add(new User(db["Name"].AsString, db["ConnID"].AsString, db["IsActive"].AsString)));
-            await cursor.ForEachAsync(db => list.Add(new User(db["Name"].AsString, db["IsActive"].AsString)));
             var json = JsonSerializer.Serialize(list);
             
             await Clients.Caller.SendAsync("ReciveUserList", json );
         }
 
-        public async Task GetGroups( string user)
+        public async Task getGroupsByUser(string userName)
         {
-            List<string> list = new List<string>();
-
-            var cursor = await mongo.GetGroups(user);
-
-            
-            await cursor.ForEachAsync(db => list.Add( db["GroupName"].AsString));
-
-            var json = JsonSerializer.Serialize(list);
+            var json = JsonSerializer.Serialize(await mongo.GetGroups(userName));
 
             await Clients.Caller.SendAsync("ReciveGroupList", json);
         }
@@ -61,38 +74,76 @@ namespace czatSerwerTIN.Hubs
             {
                 status = await mongo.InsertUser(userName, password);
                 if (status)
-                    await Groups.AddToGroupAsync(Context.ConnectionId, userName + "_user");
+                {
+                    UserInfo user = userInfoList.FirstOrDefault(u => u.userName.Equals(userName));
+                    if (user == null)
+                    {
+                        user = new UserInfo(userName);
+                        userInfoList.Add(user);
+                    }
+                    user.addConnectionID(Context.ConnectionId);
+                    foreach(string groupName in await mongo.GetGroups(userName))
+                    {
+                        await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
+                    }
+                }
             }
             await Clients.Caller.SendAsync("LoginStatus", status);
             //Console.WriteLine("Działam =" + userName);
-
-
         }
 
-        public async Task AddUserToGroup(string name, string grupname) 
+        public async Task AddUserToGroup(string name, string groupName) 
         {
-            await mongo.AddUserToGroup(name, grupname);
+            await mongo.AddUserToGroup(name, groupName);
+            UserInfo usr = userInfoList.First(u => u.hasConnectionID(Context.ConnectionId));
+            foreach(string connID in usr.connectionIDs)
+            {
+                await Groups.AddToGroupAsync(connID, groupName);
+            }
         }
-        public async Task RemoveUserFromGroup(string name, string grupname)
+        public async Task RemoveUserFromGroup(string name, string groupName)
         {
-            await mongo.RemoveUserFromGroup(name, grupname);
+            await mongo.RemoveUserFromGroup(name, groupName);
+            UserInfo usr = userInfoList.First(u => u.hasConnectionID(Context.ConnectionId));
+            foreach (string connID in usr.connectionIDs)
+            {
+                await Groups.RemoveFromGroupAsync(connID, groupName);
+            }
         }
 
         public async Task SendPrivateMessage(string sender, string destination, string message)
         {
-            await Clients.Group(destination + "_user").SendAsync("ReceiveMessage", sender, destination, message);
-           // await Clients.Group(sender + "_user").SendAsync("ReceiveMessage", sender, message);
+            Message msg = new Message(sender, message);
+            await mongo.SavePrivateMessage(msg, getPrivateGroupName(sender, destination));
+            msg.convertTimeSentToDateFormat();
+            var json = JsonSerializer.Serialize(msg);
+            UserInfo source = userInfoList.First(u => u.userName.Equals(sender));
+            UserInfo dest = userInfoList.First(u => u.userName.Equals(destination));
+            foreach(string connID in source.connectionIDs)
+            {
+                await Clients.Client(connID).SendAsync("ReceivePrivateMessage", destination, json); //do nadawcy
+            }
+            foreach (string connID in dest.connectionIDs)
+            {
+                await Clients.Client(connID).SendAsync("ReceivePrivateMessage", sender, json); //do adresata
+            }
         }
 
-        public async Task SendMessageToGroup(string sender, string group, string message)
+        public async Task SendMessageToGroup(string sender, string groupName, string message)
         {
-            //List<string> members = new List<string>();
-            //BsonArr
-            BsonArray members = new BsonArray();
-            var cursor =  await mongo.GetGroupUsers(group);
+            Message msg = new Message(sender, message);
+            await mongo.SaveGroupMessage(msg, groupName);
+            msg.convertTimeSentToDateFormat();
+            var json = JsonSerializer.Serialize(msg);
+            await Clients.Group(groupName).SendAsync("ReceiveMessage", groupName, json); 
+            ////List<string> members = new List<string>();
+            ////BsonArr
+            //BsonArray members = new BsonArray();
+            //var cursor =  await mongo.GetGroupUsers(group);
 
-            await cursor.ForEachAsync(db => members = db["Members"].AsBsonArray);
-            members.Values.ToList().ForEach(async (member) => await SendPrivateMessage(sender, member.AsString,message));
+            //await cursor.ForEachAsync(db => members = db["Members"].AsBsonArray);
+            //members.Values.ToList().ForEach(async (member) => await SendPrivateMessage(sender, member.AsString,message));
+            //SendAsync("ReceiveMessage", destination, json)
 
         }
 
@@ -100,14 +151,23 @@ namespace czatSerwerTIN.Hubs
         {   
             
             await base.OnConnectedAsync();
-            
 
         }
         public override async Task OnDisconnectedAsync(Exception exception)
         {
 
-            //do zrobienia do funkcji logout user trzeba przekazać nazwę użytkownika !!!
-            await mongo.LogoutUser(Context.ConnectionId);
+            ////do zrobienia do funkcji logout user trzeba przekazać nazwę użytkownika !!!
+            //await mongo.LogoutUser(Context.ConnectionId);
+            UserInfo user = userInfoList.First(u => u.hasConnectionID(Context.ConnectionId));
+            foreach (string groupName in await mongo.GetGroups(user.userName))
+            {
+                await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
+            }
+            user.removeConnectionID(Context.ConnectionId);
+            if(user.activeUsersCount() < 1)
+            {
+                userInfoList.Remove(user);
+            }
             await GetUsers();
             await base.OnDisconnectedAsync(exception);
             
@@ -119,21 +179,21 @@ namespace czatSerwerTIN.Hubs
             await Clients.Caller.SendAsync("ReceiveMessagesByGroup", JsonSerializer.Serialize(group));
         }
 
-        public async Task getGroupsByUser(string userName)
-        {
-            List<string> list = new List<string>();
+        //public async Task getGroupsByUser(string userName)
+        //{
+        //    List<string> list = new List<string>();
 
-            foreach(GroupInfo g in groupInfoList)
-            {
-                if(g.userInfoList.Exists(u => u.userName.Equals(userName)))
-                {
-                    list.Add(g.groupName);
-                }
-            }
+        //    foreach(GroupInfo g in groupInfoList)
+        //    {
+        //        if(g.users.Exists(u => u.Equals(userName)))
+        //        {
+        //            list.Add(g.groupName);
+        //        }
+        //    }
 
-            var json = JsonSerializer.Serialize(list);
+        //    var json = JsonSerializer.Serialize(list);
 
-            await Clients.Caller.SendAsync("ReciveGroupList", json);
-        }
+        //    await Clients.Caller.SendAsync("ReciveGroupList", json);
+        //}
     }
 }
