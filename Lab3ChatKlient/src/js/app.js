@@ -246,8 +246,11 @@ const prepareWindow=function() {
     } );
 
     connection.on("ReciveMessagesByGroup" ,  json => {
+        console.log();
+        console.log("json: " + json);
+        console.log();
         const conv = JSON.parse(json);
-        console.dir(conv);
+        //console.dir(conv);
         messages.forEach(obj =>{
             if (obj.groupName === conv.groupName) messages.delete(obj);
         });
@@ -379,11 +382,11 @@ const getSelected = function() {
 
         selected.item =this.innerHTML;
         if(this.parentNode.id === "usersList") {
-            buildConversation(selected.item,"private");
+            buildConversation(selected.item,"Private");
             selected.type = "user";
         }else {
             document.querySelector(".joinBTN").innerHTML ="<p>LEAVE</p>";
-            buildConversation(selected.item,"group");
+            buildConversation(selected.item,"Public");
             selected.type = "group";
         }
         this.classList.add("selected");
