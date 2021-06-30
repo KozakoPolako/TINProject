@@ -103,6 +103,7 @@ namespace czatSerwerTIN.DBmanager
             await cursor.ForEachAsync(content => 
             {
                 group.addMessage(new Message(content["Sender"].AsString, content["Message"].AsString, content["Time"].AsInt64));
+                Console.WriteLine($"{content["Sender"].AsString} | {content["Message"].AsString} ");
             });
 
             return group;
