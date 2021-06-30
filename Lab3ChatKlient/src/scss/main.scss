@@ -213,3 +213,29 @@ input{
 .unseen{
     color:red !important;
 }
+.imageInput{
+    z-index: 3;
+    opacity: 0;
+    top: 0;
+    width: 42px;
+    height:42px;
+}
+.inputBox{
+    z-index: 2;
+    background-color:black;
+    position: relative;
+    color:white;
+    height: 42px;
+    width: 42px;
+    border: 3px solid white; 
+    margin-top: 10px;
+    text-align: center;
+    //vertical-align: middle;
+    border-radius: 3px;
+}
+
+.inputBox:hover{
+    color: black ;
+    background-color:white;
+    cursor: pointer;
+}

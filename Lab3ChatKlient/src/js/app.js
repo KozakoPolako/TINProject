@@ -3,6 +3,8 @@ import  * as signalR  from "@microsoft/signalr";
 
 
 let username;
+
+const base64 = {byte:""};
 const selected = { item: "none" , type:"none"};
 let activeUsers;
 const loginBtn = document.querySelector(".loginBtn");
@@ -130,6 +132,7 @@ const prepareWindow=function() {
 
     const messagesView = document.createElement("div");
     const messageInput = document.createElement("input");
+    const imageInput = document.createElement("input");
     const sendMessage = document.createElement("div");
     const breakLine = document.createElement("div");
     const join = document.createElement("div");
@@ -137,6 +140,7 @@ const prepareWindow=function() {
     const div1 = document.createElement("div");
     const div2 = document.createElement("div");
     const div3 = document.createElement("div");
+    const divBox = document.createElement("div");
 
     div1.style.width="100%";
     div1.style.display="flex";
@@ -151,21 +155,30 @@ const prepareWindow=function() {
     usersList.classList.add("listPanel");
     usersList.id = "usersList";
 
+    imageInput.classList.add("imageInput");
     messagesView.classList.add("messagesView");
     messageInput.classList.add("messageInput");
     sendMessage.classList.add("sendMessage");
     breakLine.classList.add("break");
-    join.classList.add("joinBTN")
+    join.classList.add("joinBTN");
+    divBox.classList.add("inputBox");
+
+    
     sendMessage.innerHTML = "<p>SEND</p>";
     join.innerHTML = "<p>JOIN</p>";
+    //divBox.innerHTML = "<p>M</p>";
     
+    imageInput.type = "file";
+    imageInput.accept = "image/png, image/jpeg";
     
-    
+
+    divBox.appendChild(imageInput);
     container.appendChild(messagesView);
     container.appendChild(breakLine);
     container.appendChild(div1);
     div1.appendChild(div2);
     div2.appendChild(messageInput);
+    div1.appendChild(divBox);
     div1.appendChild(sendMessage);
 
     div3.appendChild(groupsList);
@@ -280,18 +293,35 @@ const prepareWindow=function() {
     document.querySelector(".sendMessage").addEventListener("click", (event) => {
         const message = document.querySelector(".messageInput").value;
         document.querySelector(".messageInput").value = "";
-        if (selected.item ==="none"){
-           connection.invoke("SendMessage", username, message,"Text").catch( (err) => console.error(err.toString()) );
-           console.log("wiadomość do wszystkich"); 
+        if (document.querySelector(".imageInput").value !="") {
+            if(selected.type ==="user") {
+            
+                connection.invoke("SendPrivateMessage", username,selected.item, toBase64(document.querySelector(".imageInput").files[0]),"Image").catch( (err) => console.error(err.toString()) );
+                console.log("wiadomość prywatna");
+                //connection.invoke("SendPrivateMessage", username,username, message,"Text").catch( (err) => console.error(err.toString()) );
+                //console.log("wiadomość prywatna");
+            }else {
+                connection.invoke("SendMessageToGroup", username,selected.item, toBase64(document.querySelector(".imageInput").files[0]),"Image").catch( (err) => console.error(err.toString()) );
+                console.log("wiadomość do grupy");
+            }
+            
         }
-        else if(selected.type ==="user") {
-            connection.invoke("SendPrivateMessage", username,selected.item, message,"Text").catch( (err) => console.error(err.toString()) );
-            console.log("wiadomość prywatna");
-            //connection.invoke("SendPrivateMessage", username,username, message,"Text").catch( (err) => console.error(err.toString()) );
-            //console.log("wiadomość prywatna");
-        }else {
-            connection.invoke("SendMessageToGroup", username,selected.item, message,"Text").catch( (err) => console.error(err.toString()) );
-            console.log("wiadomość do grupy");
+        else {
+            if (selected.item ==="none"){
+                connection.invoke("SendMessage", username, message,"Text").catch( (err) => console.error(err.toString()) );
+                console.log("wiadomość do wszystkich"); 
+            }
+        
+            else if(selected.type ==="user") {
+            
+                connection.invoke("SendPrivateMessage", username,selected.item, message,"Text").catch( (err) => console.error(err.toString()) );
+                console.log("wiadomość prywatna");
+                //connection.invoke("SendPrivateMessage", username,username, message,"Text").catch( (err) => console.error(err.toString()) );
+                //console.log("wiadomość prywatna");
+            }else {
+                connection.invoke("SendMessageToGroup", username,selected.item, message,"Text").catch( (err) => console.error(err.toString()) );
+                console.log("wiadomość do grupy");
+            }
         }
         
     });
@@ -526,8 +556,13 @@ const showMessages = function(conv){
             msg.style.marginLeft="3px";
             msg.style.color="white";
         }
-        console.log("Działam tutaj2");
-        msg.innerHTML = `<span style="color: #00bfff;">${el.sender}:</span><span>${el.msg}</span>`;
+        console.log("Działam tutaj2 Type ", el.type);
+        if(el.type =="Image") {
+            msg.innerHTML = `<span style="color: #00bfff;">${el.sender}:</span><img src="${el.msg}"></img>`;
+        } else{
+            msg.innerHTML = `<span style="color: #00bfff;">${el.sender}:</span><span>${el.msg}</span>`;
+        }
+        
     });
     //skrolowanie listy wiadomości do dołu 
     messagesView.scrollTop = messagesView.scrollHeight;
@@ -540,4 +575,20 @@ const abortion = function(){
     const messagesView = document.querySelector(".messagesView");
     const children = Array.prototype.slice.call(messagesView.children);
     children.forEach(el => el.remove());
+}
+
+
+const toBase64 = function(file){
+
+    //let base64 ;
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      // log to console
+      // logs data:<type>;base64,wL2dvYWwgbW9yZ...
+       base64.byte = reader.result;
+      //console.log(reader.result);
+    };
+    console.log(base64.byte);
+    reader.readAsDataURL(file);
+    return base64.byte;
 }
