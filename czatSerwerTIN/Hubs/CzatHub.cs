@@ -115,9 +115,9 @@ namespace czatSerwerTIN.Hubs
             }
         }
 
-        public async Task SendPrivateMessage(string sender, string destination, string message)
+        public async Task SendPrivateMessage(string sender, string destination, string message, string type)
         {
-            Message msg = new Message(sender, message);
+            Message msg = new Message(sender, message, type);
             await mongo.SavePrivateMessage(msg, getPrivateGroupName(sender, destination));
             msg.convertTimeSentToDateFormat();
             var json = JsonSerializer.Serialize(msg);
@@ -140,9 +140,9 @@ namespace czatSerwerTIN.Hubs
             
         }
 
-        public async Task SendMessageToGroup(string sender, string groupName, string message)
+        public async Task SendMessageToGroup(string sender, string groupName, string message, string type)
         {
-            Message msg = new Message(sender, message);
+            Message msg = new Message(sender, message, type);
             await mongo.SaveGroupMessage(msg, groupName);
             msg.convertTimeSentToDateFormat();
             var json = JsonSerializer.Serialize(msg);
