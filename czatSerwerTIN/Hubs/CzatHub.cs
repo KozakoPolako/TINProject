@@ -58,8 +58,7 @@ namespace czatSerwerTIN.Hubs
 
             var json = JsonSerializer.Serialize(list);
             
-            await Clients.Caller.SendAsync("Rece" +
-                "iveUserList", json );
+            await Clients.Caller.SendAsync("ReceiveUserList", json );
         }
 
         public async Task getGroupsByUser(string userName)

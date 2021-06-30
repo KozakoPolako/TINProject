@@ -39,7 +39,7 @@ namespace czatSerwerTIN.Structures
         /// <param name="connID">Ciąg znakowy reprezentujący ID połączenia danego klienta</param>
         public void removeConnectionID(string connID)
         {
-            if (!connectionIDs.Contains(connID))
+            if (connectionIDs.Contains(connID))
                 connectionIDs.Remove(connID);
         }
 
