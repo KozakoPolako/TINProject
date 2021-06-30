@@ -117,7 +117,7 @@ namespace czatSerwerTIN.Hubs
             await mongo.SavePrivateMessage(msg, getPrivateGroupName(sender, destination));
             msg.convertTimeSentToDateFormat();
             var json = JsonSerializer.Serialize(msg);
-            UserInfo source = userInfoList.First(u => u.userName.Equals(sender));
+            UserInfo source = userInfoList.FirstOrDefault(u => u.userName.Equals(sender));
             if (source != null)
             {
                 foreach (string connID in source.connectionIDs)
