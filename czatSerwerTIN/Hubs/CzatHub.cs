@@ -184,10 +184,13 @@ namespace czatSerwerTIN.Hubs
         {
             string sender = userInfoList.First(u => u.hasConnectionID(Context.ConnectionId)).userName;
             Group group = await mongo.LoadMessagesByGroupName(groupType.Equals("Private") ? getPrivateGroupName(sender, groupName) : groupName, groupType);
+            if(group != null)
+            {
+                Console.WriteLine(JsonSerializer.Serialize(group));
 
-            Console.WriteLine(JsonSerializer.Serialize(group));
-
-            await Clients.Caller.SendAsync("ReceiveMessagesByGroup", JsonSerializer.Serialize(group));
+                await Clients.Caller.SendAsync("ReceiveMessagesByGroup", JsonSerializer.Serialize(group));
+            }
+            
         }
 
         //public async Task getGroupsByUser(string userName)

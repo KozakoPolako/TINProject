@@ -107,12 +107,19 @@ namespace czatSerwerTIN.DBmanager
                     .Exclude("_id")
             };
             var cursor = await groups.FindAsync(filter,options);
-            var contentCursor = cursor.FirstOrDefault().First().Value.AsBsonArray;
-            
-            foreach(BsonValue content in contentCursor)
+            if(cursor.Current != null)
             {
-                group.addMessage(new Message(content["Sender"].AsString, content["Message"].AsString, content["Time"].AsInt32));
-                Console.WriteLine($"{content["Sender"].AsString} | {content["Message"].AsString} ");
+                var contentCursor = cursor.FirstOrDefault().First().Value.AsBsonArray;
+
+                foreach (BsonValue content in contentCursor)
+                {
+                    group.addMessage(new Message(content["Sender"].AsString, content["Message"].AsString, content["Time"].AsInt32));
+                    Console.WriteLine($"{content["Sender"].AsString} | {content["Message"].AsString} ");
+                }
+            }
+            else
+            {
+                group = null;
             }
 
             return group;
