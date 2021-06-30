@@ -173,7 +173,7 @@ namespace czatSerwerTIN.Hubs
             
         }
         
-        public async Task getMessageByGroup(string groupName, string groupType)
+        public async Task getMessagesByGroup(string groupName, string groupType)
         {
             Group group = await mongo.LoadMessagesByGroupName(groupName, groupType);
             await Clients.Caller.SendAsync("ReceiveMessagesByGroup", JsonSerializer.Serialize(group));
