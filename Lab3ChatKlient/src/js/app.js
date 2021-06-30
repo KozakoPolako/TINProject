@@ -91,7 +91,7 @@ connection.on("LoginStatus", function(status) {
         prepareWindow();
         connection.invoke("GetUsers")
             .catch(err => console.error(err.toString()));
-        connection.invoke("GetGroups",username)
+        connection.invoke("getGroupsByUser",username)
             .catch(err => console.error(err.toString()));
     }else 
     {
@@ -312,7 +312,7 @@ const buildUsersList = function(json) {
     Users.forEach(el => {
         user = document.createElement("p");
         user.innerHTML = el.name;
-        if (el.isActive === "true" ) {
+        if (el.isActive === "True" ) {
             user.style.color="#03A062";
         }else {
             user.style.color="white"; }
@@ -331,7 +331,7 @@ const buildUsersList = function(json) {
     setTimeout(() => {
         connection.invoke("GetUsers")
             .catch(err => console.error(err.toString()));
-        connection.invoke("GetGroups",username)
+        connection.invoke("getGroupsByUser",username)
             .catch(err => console.error(err.toString()));
         console.log(username);
     },15000);
@@ -401,7 +401,7 @@ const addToGroup = function() {
 
         connection.invoke("RemoveUserFromGroup",username,selected.item)
             .catch(err => console.error(err.toString()));
-        connection.invoke("GetGroups",username)
+        connection.invoke("getGroupsByUser",username)
             .catch(err => console.error(err.toString()));
         selected.item ="none";
         selected.type ="none";
@@ -441,7 +441,7 @@ const addToGroup = function() {
             
                 connection.invoke("AddUserToGroup",username,groupInput.value)
                     .catch(err => console.error(err.toString()));
-                connection.invoke("GetGroups",username)
+                connection.invoke("getGroupsByUser",username)
                     .catch(err => console.error(err.toString()));
                 window.remove();
             }
