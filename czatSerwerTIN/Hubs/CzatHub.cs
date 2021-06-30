@@ -11,13 +11,13 @@ namespace czatSerwerTIN.Hubs
 {
     public class CzatHub : Hub
     {
-        
-        // zmienna tymczasowa służyła do testowania 
-        string jsonlist = "[\"Darek\",\"Czarek\",\"Marek\"]";
 
         // połaczenie z baządanyc 
         MongoConnect mongo = new MongoConnect();
 
+        /// <summary>
+        /// Lista aktywnych 
+        /// </summary>
         static List<UserInfo> userInfoList = new();
 
         /// <summary>
@@ -30,7 +30,16 @@ namespace czatSerwerTIN.Hubs
             userInfoList.ForEach(u => count += u.activeUsersCount());
             return count;
         }
-
+        /// <summary>
+        /// <para>Funkcja wewnętrzna, która służy do generowania nazwy grupy dla konwersacji prywatnych.</para>
+        /// <para>Z adresata i nadawcy wybierana jest ta nazwa, która jest większa w rozumieniu liczbowym wartości charów,
+        /// a następnie nazwa generowana jest w schemacie pierwszy_drugi</para>
+        /// <para>W celu ujednolicenia obiektów kownersacji uzywana jest jedna definicja i zakłada ona, że każda konwersacja
+        /// ma nazwę grupy w bazie danych. Przy konwersacjach prywatnych istnieją tylko nazwy użytkowników.</para>
+        /// </summary>
+        /// <param name="sender">Nazwa nadawcy</param>
+        /// <param name="destination">Nazwa adresata</param>
+        /// <returns></returns>
         private string getPrivateGroupName(string sender, string destination)
         {
             int strOrder = string.CompareOrdinal(sender, destination);
@@ -41,12 +50,21 @@ namespace czatSerwerTIN.Hubs
             }
             return groupName;
         }
-
+        /// <summary>
+        /// <para>DEPRECATED!!!</para>
+        /// <para>Funkcja która przekazuje wiadomość do wszystkich</para>
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="message"></param>
+        /// <returns></returns>
         public async Task SendMessage(string user, string message)
         {
             await Clients.All.SendAsync("ReceiveMessage", user, message);
         }
-
+        /// <summary>
+        /// Funkcja zwracająca listę użytkowników aplikacji wraz z oznaczeniem, którzy są aktywnie zalogowani.
+        /// </summary>
+        /// <returns></returns>
         public async Task GetUsers()
         {
             List<User> list = new List<User>();
@@ -60,13 +78,25 @@ namespace czatSerwerTIN.Hubs
             
             await Clients.Caller.SendAsync("ReceiveUserList", json );
         }
-
+        /// <summary>
+        /// Funkcja, która zwraca listę grup, w której znajduje się użytkownik wywołujący, z bazy danych.
+        /// </summary>
+        /// <param name="userName">Nazwa użytkownika</param>
+        /// <returns></returns>
         public async Task getGroupsByUser(string userName)
         {
             var json = JsonSerializer.Serialize(await mongo.GetGroups(userName));
 
             await Clients.Caller.SendAsync("ReceiveGroupList", json);
         }
+        /// <summary>
+        /// Funkcja obsługująca logowanie użytkownika lub rejestrację w aplikacji. Przy rejestracji lub poprawnym logowaniu
+        /// wysyłana jest wiadomosc z odpowiedzią True, przy błędnym haśle wysyłane jest False. W przyszłości planowane jest 
+        /// zastąpienie hasła w plaintext na hash.
+        /// </summary>
+        /// <param name="userName">Nazwa użytkownika, którą podano w formularzu logowania</param>
+        /// <param name="password">Hasło, które podano w formularzu logowaniu</param>
+        /// <returns></returns>
         public async Task Login(string userName, string password)
         {
             bool status = false;
@@ -89,9 +119,15 @@ namespace czatSerwerTIN.Hubs
                 }
             }
             await Clients.Caller.SendAsync("LoginStatus", status);
-            //Console.WriteLine("Działam =" + userName);
         }
-
+        /// <summary>
+        /// Funkcja, której wywołanie przez klienta powoduje dodanie użytkownika, do którego nalezy połączenie wywołujące,
+        /// do grupy o nazwie przesłanej w parametrze <c>groupName</c>. Użytkownik dodawany jest do grupy w bazie danych oraz
+        /// do grupy SignalR.
+        /// </summary>
+        /// <param name="userName">Nazwa użytkownika wywołującego</param>
+        /// <param name="groupName">Nazwa grupy</param>
+        /// <returns></returns>
         public async Task AddUserToGroup(string userName, string groupName) 
         {
             await mongo.AddUserToGroup(userName, groupName);
@@ -103,6 +139,14 @@ namespace czatSerwerTIN.Hubs
                 await Clients.Client(connID).SendAsync("ReceiveGroupList", json);
             }
         }
+        /// <summary>
+        /// Funkcja, której wywołanie przez klienta powoduje usunięcie użytkownika, do którego nalezy połączenie wywołujące,
+        /// z grupy o nazwie przesłanej w parametrze <c>groupName</c>. Użytkownik usuwany jest z grupy w bazie danych oraz
+        /// z grupy SignalR.
+        /// </summary>
+        /// <param name="userName">Nazwa użytkownika wywołującego</param>
+        /// <param name="groupName">Nazwa grupy</param>
+        /// <returns></returns>
         public async Task RemoveUserFromGroup(string userName, string groupName)
         {
             await mongo.RemoveUserFromGroup(userName, groupName);
@@ -114,7 +158,16 @@ namespace czatSerwerTIN.Hubs
                 await Clients.Client(connID).SendAsync("ReceiveGroupList", json);
             }
         }
-
+        /// <summary>
+        /// Funkcja, której wywołanie przez klienta powoduje wysłanie wiadomości prywatnej do użytkowników konwersacji prywatnej
+        /// oraz zapisanie tej wiadomości w bazie danych we wpisie dotyczącym tej konwersacji. Wiadomość jest wysyłana jako
+        /// zserializowany obiekt Message. Nazwa grupy jest generowana przez funkcję <c>getPrivateGroupName()</c>
+        /// </summary>
+        /// <param name="sender">Nazwa użytkownika nadawcy</param>
+        /// <param name="destination">Nazwa użytkownika adresata</param>
+        /// <param name="message">Treść wiadomości</param>
+        /// <param name="type">Typ wiadomości, jeden z <c>{"Text","Video","Image","Audio"}</c></param>
+        /// <returns></returns>
         public async Task SendPrivateMessage(string sender, string destination, string message, string type)
         {
             Message msg = new Message(sender, message, type);
@@ -140,6 +193,16 @@ namespace czatSerwerTIN.Hubs
             
         }
 
+        /// <summary>
+        /// Funkcja, której wywołanie przez klienta powoduje wysłanie wiadomości do wszystkich uzytkowników grupy
+        /// oraz zapisanie tej wiadomości w bazie danych we wpisie dotyczącym tej grupy. Wiadomość jest wysyłana jako
+        /// zserializowany obiekt Message
+        /// </summary>
+        /// <param name="sender">Nazwa użytkownika nadawcy</param>
+        /// <param name="groupName">Nazwa grupy docelowej</param>
+        /// <param name="message">Treść wiadomości</param>
+        /// <param name="type">Typ wiadomości, jeden z <c>{"Text","Video","Image","Audio"}</c></param>
+        /// <returns></returns>
         public async Task SendMessageToGroup(string sender, string groupName, string message, string type)
         {
             Message msg = new Message(sender, message, type);
@@ -147,28 +210,20 @@ namespace czatSerwerTIN.Hubs
             msg.convertTimeSentToDateFormat();
             var json = JsonSerializer.Serialize(msg);
             await Clients.Group(groupName).SendAsync("ReceiveMessage", groupName, json); 
-            ////List<string> members = new List<string>();
-            ////BsonArr
-            //BsonArray members = new BsonArray();
-            //var cursor =  await mongo.GetGroupUsers(group);
-
-            //await cursor.ForEachAsync(db => members = db["Members"].AsBsonArray);
-            //members.Values.ToList().ForEach(async (member) => await SendPrivateMessage(sender, member.AsString,message));
-            //SendAsync("ReceiveMessage", destination, json)
-
         }
 
         public override async  Task OnConnectedAsync()
         {   
-            
             await base.OnConnectedAsync();
-
         }
+        /// <summary>
+        /// Funkcja nadpisująca standardową OnDisconnectedAsync, usuwa ona z listy aktywnych użytkowników ID
+        /// odłączonego połączenia i jeśli dla danego użytkownika nie pozostało żadne ID połączenia, to użytkownik jest również usuwany z listy
+        /// </summary>
+        /// <param name="exception"></param>
+        /// <returns></returns>
         public override async Task OnDisconnectedAsync(Exception exception)
         {
-
-            ////do zrobienia do funkcji logout user trzeba przekazać nazwę użytkownika !!!
-            //await mongo.LogoutUser(Context.ConnectionId);
             UserInfo user = userInfoList.First(u => u.hasConnectionID(Context.ConnectionId));
             foreach (string groupName in await mongo.GetGroups(user.userName))
             {
@@ -183,7 +238,13 @@ namespace czatSerwerTIN.Hubs
             await base.OnDisconnectedAsync(exception);
             
         }
-        
+        /// <summary>
+        /// Funkcja, która na zapytanie klienta SignalR pobiera z bazy danych wszsytkie wiadomości 
+        /// dla grupy określonej w parametrach, a następnie wysyła odpowiedź z zserializowanym obiektem "Grupy"
+        /// </summary>
+        /// <param name="groupName">Nazwa grupy lub nazwa użytkownika(w przypadku konwersacji prywatnej)</param>
+        /// <param name="groupType">Typ grupy, Private lub Public</param>
+        /// <returns></returns>
         public async Task getMessagesByGroup(string groupName, string groupType)
         {
             string sender = userInfoList.First(u => u.hasConnectionID(Context.ConnectionId)).userName;
@@ -196,22 +257,5 @@ namespace czatSerwerTIN.Hubs
             }
             
         }
-
-        //public async Task getGroupsByUser(string userName)
-        //{
-        //    List<string> list = new List<string>();
-
-        //    foreach(GroupInfo g in groupInfoList)
-        //    {
-        //        if(g.users.Exists(u => u.Equals(userName)))
-        //        {
-        //            list.Add(g.groupName);
-        //        }
-        //    }
-
-        //    var json = JsonSerializer.Serialize(list);
-
-        //    await Clients.Caller.SendAsync("ReciveGroupList", json);
-        //}
     }
 }
