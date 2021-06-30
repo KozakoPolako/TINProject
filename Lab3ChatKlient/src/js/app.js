@@ -157,6 +157,7 @@ const prepareWindow=function() {
     join.innerHTML = "<p>JOIN</p>";
     
     
+    
     container.appendChild(messegesView);
     container.appendChild(breakLine);
     container.appendChild(div1);
@@ -176,28 +177,60 @@ const prepareWindow=function() {
     //container.appendChild(messegeInput);
     //container.appendChild(sendMessege);
 
-    connection.on("ReceiveMessage", function (user, destination, message) {
+    connection.on("ReceiveMessage", function (destination, message) {
+        const message = JSON.parse(json);
+        console.dir(message);
         const msg = document.createElement("p");
-        
-        messegesView.appendChild(msg);
-        if(user === username) {
-            user = "You";
-            msg.style.width="80%";
-            msg.style.float="right";
-            msg.style.textAlign="right";
-            msg.style.marginRight="3px";
-            msg.style.color="#03A062";
-        }else{
-            msg.style.width="80%";
-            msg.style.float="left";
-            msg.style.textAlign="left";
-            msg.style.marginLeft="3px";
-            msg.style.color="white";
-        }
+        if (selected.item === destination && selected.type === "group"){
+            messegesView.appendChild(msg);
+            if(message.sender === username) {
+                message.sender = "You";
+                msg.style.width="80%";
+                msg.style.float="right";
+                msg.style.textAlign="right";
+                msg.style.marginRight="3px";
+                msg.style.color="#03A062";
+            }else{
+                msg.style.width="80%";
+                msg.style.float="left";
+                msg.style.textAlign="left";
+                msg.style.marginLeft="3px";
+                msg.style.color="white";
+            }
         
         //skrolowanie listy wiadomości do dołu 
         messegesView.scrollTop = messegesView.scrollHeight;
-        msg.innerHTML = `<span style="color: #00bfff;">${user}:</span><span>${message}</span>`;
+        msg.innerHTML = `<span style="color: #00bfff;">${message.sender}:</span><span>${message.msg}</span>`;
+        }
+        
+    });
+
+    connection.on("ReceivePrivateMessage", function (destination, json) {
+        const message = JSON.parse(json);
+        console.dir(message);
+        const msg = document.createElement("p");
+        if (selected.item === destination && selected.type === "user"){
+            messegesView.appendChild(msg);
+            if(message.sender === username) {
+                message.sender = "You";
+                msg.style.width="80%";
+                msg.style.float="right";
+                msg.style.textAlign="right";
+                msg.style.marginRight="3px";
+                msg.style.color="#03A062";
+            }else{
+                msg.style.width="80%";
+                msg.style.float="left";
+                msg.style.textAlign="left";
+                msg.style.marginLeft="3px";
+                msg.style.color="white";
+            }
+        
+        //skrolowanie listy wiadomości do dołu 
+        messegesView.scrollTop = messegesView.scrollHeight;
+        msg.innerHTML = `<span style="color: #00bfff;">${message.sender}:</span><span>${message.msg}</span>`;
+        }
+        
     });
 
     connection.on("ReciveUserList" ,  json => {
@@ -223,6 +256,8 @@ const prepareWindow=function() {
 
         showMessages(conv);
     } );
+
+    
 
     join.addEventListener("click", addToGroup);
     
