@@ -106,21 +106,22 @@ namespace czatSerwerTIN.DBmanager
                     .Include("Content")
                     .Exclude("_id")
             };
-            var cursor = await groups.FindAsync(filter,options);
+            var cursor = (await groups.FindAsync(filter,options)).FirstOrDefault();
+            
+            if (cursor == null)
+            {
+                return null;
+            }
             var contentCursor = cursor.FirstOrDefault();
-            if (contentCursor != null)
+            if (contentCursor.Value == null)
             {
-                foreach (BsonValue content in contentCursor.First().Value.AsBsonArray)
-                {
-                    group.addMessage(new Message(content["Sender"].AsString, content["Message"].AsString, content["Time"].AsInt32));
-                    Console.WriteLine($"{content["Sender"].AsString} | {content["Message"].AsString} ");
-                }
+                return null;
             }
-            else
+            foreach (BsonValue content in contentCursor.Value.AsBsonArray)
             {
-                group = null;
+                group.addMessage(new Message(content["Sender"].AsString, content["Message"].AsString, content["Time"].AsInt32));
+                Console.WriteLine($"{content["Sender"].AsString} | {content["Message"].AsString} ");
             }
-
             return group;
         }
         public async Task SavePrivateMessage(Message message, string groupname)
