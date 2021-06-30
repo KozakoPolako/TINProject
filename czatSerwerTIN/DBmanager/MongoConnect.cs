@@ -107,11 +107,10 @@ namespace czatSerwerTIN.DBmanager
                     .Exclude("_id")
             };
             var cursor = await groups.FindAsync(filter,options);
-            if(cursor.Current != null)
+            var contentCursor = cursor.FirstOrDefault();
+            if (contentCursor != null)
             {
-                var contentCursor = cursor.FirstOrDefault().First().Value.AsBsonArray;
-
-                foreach (BsonValue content in contentCursor)
+                foreach (BsonValue content in contentCursor.First().Value.AsBsonArray)
                 {
                     group.addMessage(new Message(content["Sender"].AsString, content["Message"].AsString, content["Time"].AsInt32));
                     Console.WriteLine($"{content["Sender"].AsString} | {content["Message"].AsString} ");
