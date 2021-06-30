@@ -35,7 +35,7 @@ namespace czatSerwerTIN.DBmanager
 
         /// <summary>
         /// Gdy nie istnieje dokument o kluczu <c>Name = name</c>, dodaje nowego użytkownika
-        /// do bazy danych
+        /// do bazy danych, jeśli użytkownik istnieje, sprawdza czy podane hasło jest zgodne
         /// </summary>
         /// <param name="name">Nazwa dodawanego użytkownika</param>
         /// <param name="password">Hasło (plaintext) nowego użytkownika</param>
@@ -61,13 +61,9 @@ namespace czatSerwerTIN.DBmanager
                 status = true;
             }else
             // podano prawidłowe dane logowania 
-            if (usrCount > 1 )
+            if (usrCount > 1 ) //niepoprawna liczba użytkowników dla nazwy, błąd
             {
                 status = false;
-                //var filter = Builders<BsonDocument>.Filter.Eq("Name", name);
-                //var update = Builders<BsonDocument>.Update.Set("IsActive", "true");
-                //var options = new UpdateOptions { IsUpsert = true };
-                //await users.UpdateOneAsync(filter, update, options);
             }
             
             return status;
@@ -94,18 +90,6 @@ namespace czatSerwerTIN.DBmanager
         {
             return groups.UpdateOneAsync("{GroupName: \"" + groupName + "\", Type: \"Public\"}","{$pull: {Members: \""+name+"\"}}");
         }
-        //public Task LogoutUser(string username)
-        //{
-        //    var filter = Builders<BsonDocument>.Filter.Eq("Name", username);
-        //    var update = Builders<BsonDocument>.Update.Set("IsActive", "false");
-
-        //    return users.UpdateOneAsync(filter, update);
-        //}
-        //public Task<IAsyncCursor<BsonDocument>> GetGroupUsers(string groupname)
-        //{
-        //    var filter = Builders<BsonDocument>.Filter.Eq("GroupName", groupname);
-        //    return groups.FindAsync(filter);
-        //}
 
         /// <summary>
         /// Zapisuje wiadomość wysłaną do grupy <c>groupName</c> w bazie danych
@@ -122,8 +106,8 @@ namespace czatSerwerTIN.DBmanager
         /// Wczytuje wszystkie wiadomosci z danego <c>groupName</c> z bazy danych
         /// </summary>
         /// <param name="groupName">Nazwa grupy, o której historię wiadomości pytana jest baza danych</param>
-        /// <param name="groupType">private lub public: Określa czy konwersacja jest grupowa, czy prywatna</param>
-        /// <returns>Zadanie zwraca obiekt zawierający wiadomości dla grupy</returns>
+        /// <param name="groupType">Private lub Public: Określa czy konwersacja jest grupowa, czy prywatna</param>
+        /// <returns>Zadanie zwraca obiekt klasy Group zawierający wiadomości dla grupy</returns>
         public async Task<Group> LoadMessagesByGroupName(string groupName, string groupType)
         {
             Group group = new Group(groupName, groupType);
@@ -154,7 +138,7 @@ namespace czatSerwerTIN.DBmanager
         }
 
         /// <summary>
-        /// Zapisuje wiadomośc do grupy dwuosobowej (prywatną), składającej się z użytkownika
+        /// Zapisuje wiadomość do grupy dwuosobowej (prywatną), składającej się z użytkownika
         /// wysyłającego i innego użytkownika czatu
         /// </summary>
         /// <param name="message">Treść wysłanej wiadomości</param>
@@ -184,26 +168,21 @@ namespace czatSerwerTIN.DBmanager
         }
 
         /// <summary>
-        /// DEPRACATED
-        /// zwraca kursor użytkownika
+        /// <para>DEPRACATED!!!</para>
+        /// <para>Aktualna funkcja to <c>GetUsers()</c></para>
+        /// <para>zwraca kursor po zarejestrowanych użytkownikach</para>
         /// </summary>
         /// <returns></returns>
         public Task<IAsyncCursor<BsonDocument>> GetUsersCursor()
         {
-
-            //var filter = Builders<BsonDocument>.Filter.Eq("IsActive", "true");
-            //string Users = users.FindAsync(filter).;
-
-
             return users.FindAsync(_ => true);
-
         }
 
         /// <summary>
         /// Zwraca nazwy konwersacji, w których znajduje się użytkownik
         /// </summary>
-        /// <param name="user">Użytkownik, którego szukane są grupy</param>
-        /// <returns>Lista użytkowników w postaci stringów</returns>
+        /// <param name="user">Użytkownik, dla którego szukane są grupy</param>
+        /// <returns>Lista grup w postaci stringów</returns>
         public async Task<List<string>> GetGroups(string user)
         {
             List<string> list = new List<string>();
