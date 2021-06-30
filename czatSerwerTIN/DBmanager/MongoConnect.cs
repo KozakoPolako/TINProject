@@ -88,27 +88,32 @@ namespace czatSerwerTIN.DBmanager
             var filter = Builders<BsonDocument>.Filter.Eq("GroupName", groupname);
             return groups.FindAsync(filter);
         }
-        public async Task SaveMessageGroupMessage(string username, string message, string groupname)
+        public async Task SaveMessageGroupMessage(Message message, string groupname)
         {
-            DateTime foo = DateTime.Now;
-            long unixTime = ((DateTimeOffset)foo).ToUnixTimeSeconds();
-            await groups.UpdateOneAsync("{ GroupName:\"" + groupname + "\" }", "{ $addToSet: { Content: { Sender: \"" + username + "\", Time: \"" + unixTime.ToString() + "\", Message: \"" + message + "\"} } }");
+            await groups.UpdateOneAsync("{ GroupName:\"" + groupname + "\", Type: \"Public\" }", "{ $addToSet: { Content: { Sender: \"" + message.sender + "\", Time: " + message.timeSent + ", Message: \"" + message.msg + "\"} } }");
         }
         /// <summary>
         /// Wczytuje wszystkie wiadomosci z danego groupname z bazy danych. Zwrotka jest w postaci <c>&lt;IAsyncCursor&lt;BsonDocument&gt;&gt;</c>
         /// </summary>
         /// <param name="groupname"></param>
         /// <returns></returns>
-        public Task<IAsyncCursor<BsonDocument>> LoadMessagesByGroupName(string groupname)
+        public async Task<Group> LoadMessagesByGroupName(string groupName, string groupType)
         {
-            return groups.FindAsync("{GroupName: \"" + groupname + "\"}, {Content:1, _id:0}");
+            Group group = new Group(groupName, groupType);
+            var cursor = await groups.FindAsync("{GroupName: \"" + groupName + "\", Type: \"" + groupType + "\"}, {Content:1, _id:0}");
+            await cursor.ForEachAsync(content => 
+            {
+                group.addMessage(new Message(content["Sender"].AsString, content["Message"].AsString, content["Time"].AsInt64));
+            });
+
+            return group;
         }
         public async Task SavePrivateMessage(string username, string message, string groupname)
         {
             DateTime foo = DateTime.Now;
             long unixTime = ((DateTimeOffset)foo).ToUnixTimeSeconds();
             var options = new UpdateOptions { IsUpsert = true };
-            await groups.UpdateOneAsync("{ GroupName:" + groupname + " }", "{ $addToSet: { Content: { Sender: " + username + ", Time: " + unixTime.ToString() + ", Message: " + message + "} } }", options);
+            await groups.UpdateOneAsync("{ GroupName: \"" + groupname + "\", Type: \"Private\" }", "{ $addToSet: { Content: { Sender: \"" + username + "\", Time: " + unixTime.ToString() + ", Message: \"" + message + "\"} } }", options);
         }
 
 

@@ -112,11 +112,12 @@ namespace czatSerwerTIN.Hubs
             await base.OnDisconnectedAsync(exception);
             
         }
-        /*
+        
         public async Task getMessageByGroup(string groupName, string groupType)
         {
-            
-        }*/
+            Group group = await mongo.LoadMessagesByGroupName(groupName, groupType);
+            await Clients.Caller.SendAsync("ReceiveMessagesByGroup", JsonSerializer.Serialize(group));
+        }
 
         public async Task getGroupsByUser(string userName)
         {
