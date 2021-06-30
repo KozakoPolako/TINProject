@@ -214,6 +214,7 @@ const prepareWindow=function() {
 
     connection.on("ReciveMessagesByGroup" ,  json => {
         const conv = JSON.parse(json);
+        console.dir(conv);
         messages.forEach(obj =>{
             if (obj.groupName === conv.groupName) messages.delete(obj);
         });
