@@ -118,15 +118,19 @@ namespace czatSerwerTIN.Hubs
             msg.convertTimeSentToDateFormat();
             var json = JsonSerializer.Serialize(msg);
             UserInfo source = userInfoList.First(u => u.userName.Equals(sender));
-            UserInfo dest = userInfoList.First(u => u.userName.Equals(destination));
             foreach(string connID in source.connectionIDs)
             {
                 await Clients.Client(connID).SendAsync("ReceivePrivateMessage", destination, json); //do nadawcy
             }
-            foreach (string connID in dest.connectionIDs)
+            UserInfo dest = userInfoList.FirstOrDefault(u => u.userName.Equals(destination));
+            if(dest != null)
             {
-                await Clients.Client(connID).SendAsync("ReceivePrivateMessage", sender, json); //do adresata
+                foreach (string connID in dest.connectionIDs)
+                {
+                    await Clients.Client(connID).SendAsync("ReceivePrivateMessage", sender, json); //do adresata
+                }
             }
+            
         }
 
         public async Task SendMessageToGroup(string sender, string groupName, string message)
