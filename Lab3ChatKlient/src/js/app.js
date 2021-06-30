@@ -125,9 +125,9 @@ const prepareWindow=function() {
     const groupsList = document.createElement("div");
     const usersList = document.createElement("div");
 
-    const messegesView = document.createElement("div");
-    const messegeInput = document.createElement("input");
-    const sendMessege = document.createElement("div");
+    const messagesView = document.createElement("div");
+    const messageInput = document.createElement("input");
+    const sendMessage = document.createElement("div");
     const breakLine = document.createElement("div");
     const join = document.createElement("div");
     
@@ -148,22 +148,22 @@ const prepareWindow=function() {
     usersList.classList.add("listPanel");
     usersList.id = "usersList";
 
-    messegesView.classList.add("messegesView");
-    messegeInput.classList.add("messegeInput");
-    sendMessege.classList.add("sendMessege");
+    messagesView.classList.add("messagesView");
+    messageInput.classList.add("messageInput");
+    sendMessage.classList.add("sendMessage");
     breakLine.classList.add("break");
     join.classList.add("joinBTN")
-    sendMessege.innerHTML = "<p>SEND</p>";
+    sendMessage.innerHTML = "<p>SEND</p>";
     join.innerHTML = "<p>JOIN</p>";
     
     
     
-    container.appendChild(messegesView);
+    container.appendChild(messagesView);
     container.appendChild(breakLine);
     container.appendChild(div1);
     div1.appendChild(div2);
-    div2.appendChild(messegeInput);
-    div1.appendChild(sendMessege);
+    div2.appendChild(messageInput);
+    div1.appendChild(sendMessage);
 
     div3.appendChild(groupsList);
     div3.appendChild(join);
@@ -177,12 +177,12 @@ const prepareWindow=function() {
     //container.appendChild(messegeInput);
     //container.appendChild(sendMessege);
 
-    connection.on("ReceiveMessage", function (destination, message) {
+    connection.on("ReceiveMessage", function (destination, json) {
         const message = JSON.parse(json);
         console.dir(message);
         const msg = document.createElement("p");
         if (selected.item === destination && selected.type === "group"){
-            messegesView.appendChild(msg);
+            messagesView.appendChild(msg);
             if(message.sender === username) {
                 message.sender = "You";
                 msg.style.width="80%";
@@ -199,7 +199,7 @@ const prepareWindow=function() {
             }
         
         //skrolowanie listy wiadomości do dołu 
-        messegesView.scrollTop = messegesView.scrollHeight;
+        messagesView.scrollTop = messagesView.scrollHeight;
         msg.innerHTML = `<span style="color: #00bfff;">${message.sender}:</span><span>${message.msg}</span>`;
         }
         
@@ -210,7 +210,7 @@ const prepareWindow=function() {
         console.dir(message);
         const msg = document.createElement("p");
         if (selected.item === destination && selected.type === "user"){
-            messegesView.appendChild(msg);
+            messagesView.appendChild(msg);
             if(message.sender === username) {
                 message.sender = "You";
                 msg.style.width="80%";
@@ -227,7 +227,7 @@ const prepareWindow=function() {
             }
         
         //skrolowanie listy wiadomości do dołu 
-        messegesView.scrollTop = messegesView.scrollHeight;
+        messagesView.scrollTop = messagesView.scrollHeight;
         msg.innerHTML = `<span style="color: #00bfff;">${message.sender}:</span><span>${message.msg}</span>`;
         }
         
@@ -261,9 +261,9 @@ const prepareWindow=function() {
 
     join.addEventListener("click", addToGroup);
     
-    document.querySelector(".sendMessege").addEventListener("click", (event) => {
-        const message = document.querySelector(".messegeInput").value;
-        document.querySelector(".messegeInput").value = "";
+    document.querySelector(".sendMessage").addEventListener("click", (event) => {
+        const message = document.querySelector(".messageInput").value;
+        document.querySelector(".messageInput").value = "";
         if (selected.item ==="none"){
            connection.invoke("SendMessage", username, message).catch( (err) => console.error(err.toString()) );
            console.log("wiadomość do wszystkich"); 
@@ -281,10 +281,10 @@ const prepareWindow=function() {
     });
 
     // klawisz enter aktywuje przycisk sendsendMessage
-    messegeInput.addEventListener("keyup", (event) => {
+    messageInput.addEventListener("keyup", (event) => {
         if (event.key === 'Enter') {
             event.preventDefault();
-            sendMessege.click();
+            sendMessage.click();
         }
     })
     // Testowanie Grup ();
@@ -456,18 +456,18 @@ const buildConversation = function(convName,type){
     connection.invoke("getMessagesByGroup",convName,type)
                     .catch(err => console.error(err.toString()));
 
-    const messagesView = document.querySelector(".messegesView");
+    const messagesView = document.querySelector(".messagesView");
     const children = Array.prototype.slice.call(messagesView.children);
     children.forEach(el => el.remove());
 }
 const showMessages = function(conv){
 
-    const messegesView = document.querySelector(".messegesView");
+    const messagesView = document.querySelector(".messagesView");
     
     conv.content.forEach(el =>{
         const msg = document.createElement("p");
         
-        messegesView.appendChild(msg);
+        messagesView.appendChild(msg);
         if(el.sender === username) {
             user = "You";
             msg.style.width="80%";
@@ -486,7 +486,7 @@ const showMessages = function(conv){
         msg.innerHTML = `<span style="color: #00bfff;">${el.sender}:</span><span>${el.message}</span>`;
     });
     //skrolowanie listy wiadomości do dołu 
-    messegesView.scrollTop = messegesView.scrollHeight;
+    messagesView.scrollTop = messagesView.scrollHeight;
     
     
     
