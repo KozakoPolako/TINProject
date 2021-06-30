@@ -92,7 +92,7 @@ namespace czatSerwerTIN.DBmanager
             await groups.UpdateOneAsync("{ GroupName:\"" + groupname + "\", Type: \"Public\" }", "{ $addToSet: { Content: { Sender: \"" + message.sender + "\", Time: " + message.timeSent + ", Message: \"" + message.msg + "\"} } }");
         }
         /// <summary>
-        /// Wczytuje wszystkie wiadomosci z danego groupname z bazy danych. Zwrotka jest w postaci <c>&lt;IAsyncCursor&lt;BsonDocument&gt;&gt;</c>
+        /// Wczytuje wszystkie wiadomosci z danego groupname z bazy danych. Zwraca obiekt Group
         /// </summary>
         /// <param name="groupname"></param>
         /// <returns></returns>
