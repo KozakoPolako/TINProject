@@ -63,30 +63,30 @@ namespace czatSerwerTIN.DBmanager
 
         public Task AddUserToGroup(string name, string groupName)
         {
-            var filter = Builders<BsonDocument>.Filter.Eq("GroupName", groupName);
+            //var filter = Builders<BsonDocument>.Filter.Eq("GroupName", groupName);
             var update = Builders<BsonDocument>.Update.AddToSet("Members", name);
 
             var options = new UpdateOptions { IsUpsert = true };
 
-            return groups.UpdateOneAsync(filter, update, options);
+            return groups.UpdateOneAsync("{GroupName: \""+groupName+ "\", Type: \"Public\"}", update, options);
         }
 
         public Task RemoveUserFromGroup(string name, string groupName)
         {
             return groups.UpdateOneAsync("{GroupName: \"" + groupName + "\", Type: \"Public\"}","{$pull: {Members: \""+name+"\"}}");
         }
-        public Task LogoutUser(string username)
-        {
-            var filter = Builders<BsonDocument>.Filter.Eq("Name", username);
-            var update = Builders<BsonDocument>.Update.Set("IsActive", "false");
+        //public Task LogoutUser(string username)
+        //{
+        //    var filter = Builders<BsonDocument>.Filter.Eq("Name", username);
+        //    var update = Builders<BsonDocument>.Update.Set("IsActive", "false");
 
-            return users.UpdateOneAsync(filter, update);
-        }
-        public Task<IAsyncCursor<BsonDocument>> GetGroupUsers(string groupname)
-        {
-            var filter = Builders<BsonDocument>.Filter.Eq("GroupName", groupname);
-            return groups.FindAsync(filter);
-        }
+        //    return users.UpdateOneAsync(filter, update);
+        //}
+        //public Task<IAsyncCursor<BsonDocument>> GetGroupUsers(string groupname)
+        //{
+        //    var filter = Builders<BsonDocument>.Filter.Eq("GroupName", groupname);
+        //    return groups.FindAsync(filter);
+        //}
         public async Task SaveGroupMessage(Message message, string groupname)
         {
             await groups.UpdateOneAsync("{ GroupName:\"" + groupname + "\", Type: \"Public\" }", "{ $addToSet: { Content: { Sender: \"" + message.sender + "\", Time: " + message.timeSent + ", Message: \"" + message.msg + "\"} } }");
