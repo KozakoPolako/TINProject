@@ -281,16 +281,16 @@ const prepareWindow=function() {
         const message = document.querySelector(".messageInput").value;
         document.querySelector(".messageInput").value = "";
         if (selected.item ==="none"){
-           connection.invoke("SendMessage", username, message).catch( (err) => console.error(err.toString()) );
+           connection.invoke("SendMessage", username, message,"Text").catch( (err) => console.error(err.toString()) );
            console.log("wiadomość do wszystkich"); 
         }
         else if(selected.type ==="user") {
-            connection.invoke("SendPrivateMessage", username,selected.item, message).catch( (err) => console.error(err.toString()) );
+            connection.invoke("SendPrivateMessage", username,selected.item, message,"Text").catch( (err) => console.error(err.toString()) );
             console.log("wiadomość prywatna");
-            connection.invoke("SendPrivateMessage", username,username, message).catch( (err) => console.error(err.toString()) );
-            console.log("wiadomość prywatna");
+            //connection.invoke("SendPrivateMessage", username,username, message,"Text").catch( (err) => console.error(err.toString()) );
+            //console.log("wiadomość prywatna");
         }else {
-            connection.invoke("SendMessageToGroup", username,selected.item, message).catch( (err) => console.error(err.toString()) );
+            connection.invoke("SendMessageToGroup", username,selected.item, message,"Text").catch( (err) => console.error(err.toString()) );
             console.log("wiadomość do grupy");
         }
         

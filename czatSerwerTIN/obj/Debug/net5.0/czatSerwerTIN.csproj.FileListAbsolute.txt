@@ -46,7 +46,6 @@ C:\Workspace\TINlab3\czatSerwerTIN\bin\Debug\net5.0\runtimes\win\native\snappy64
 C:\Workspace\TINlab3\czatSerwerTIN\bin\Debug\net5.0\runtimes\linux\native\libmongocrypt.so
 C:\Workspace\TINlab3\czatSerwerTIN\bin\Debug\net5.0\runtimes\osx\native\libmongocrypt.dylib
 C:\Workspace\TINlab3\czatSerwerTIN\bin\Debug\net5.0\runtimes\win\native\mongocrypt.dll
-C:\Workspace\TINlab3\czatSerwerTIN\obj\Debug\net5.0\czatSerwerTIN.csprojAssemblyReference.cache
 C:\Workspace\TINlab3\czatSerwerTIN\obj\Debug\net5.0\czatSerwerTIN.GeneratedMSBuildEditorConfig.editorconfig
 C:\Workspace\TINlab3\czatSerwerTIN\obj\Debug\net5.0\czatSerwerTIN.AssemblyInfoInputs.cache
 C:\Workspace\TINlab3\czatSerwerTIN\obj\Debug\net5.0\czatSerwerTIN.AssemblyInfo.cs

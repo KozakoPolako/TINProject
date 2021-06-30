@@ -19,9 +19,9 @@ namespace czatSerwerTIN.DBmanager
             content = new();
         }
 
-        public void addMessage(string sender, string msg)
+        public void addMessage(string sender, string msg,string type)
         {
-            content.Add(new Message(sender, msg));
+            content.Add(new Message(sender, msg, type));
         }
 
         public void addMessage(Message msg)
