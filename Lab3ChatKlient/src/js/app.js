@@ -233,29 +233,29 @@ const prepareWindow=function() {
         
     });
 
-    connection.on("ReciveUserList" ,  json => {
+    connection.on("ReceiveUserList" ,  json => {
         //activeUsers  = JSON.parse(json);
         //console.dir(activeUsers);
         buildUsersList(json);
     } );
 
-    connection.on("ReciveGroupList" ,  json => {
+    connection.on("ReceiveGroupList" ,  json => {
         //activeUsers  = JSON.parse(json);
         //console.dir(activeUsers);
         buildGroupsList(json);
     } );
 
-    connection.on("ReciveMessagesByGroup" ,  json => {
+    connection.on("ReceiveMessagesByGroup" ,  json => {
         console.log();
         console.log("json: " + json);
         console.log();
         const conv = JSON.parse(json);
-        //console.dir(conv);
-        messages.forEach(obj =>{
-            if (obj.groupName === conv.groupName) messages.delete(obj);
-        });
+        console.dir(conv);
+        // messages.forEach(obj =>{
+        //     if (obj.groupName === conv.groupName) messages.delete(obj);
+        // });
 
-        messages.add(conv);
+        // messages.add(conv.content);
 
         showMessages(conv);
     } );
@@ -464,29 +464,32 @@ const buildConversation = function(convName,type){
     children.forEach(el => el.remove());
 }
 const showMessages = function(conv){
-
+    console.log("Działam tutaj");
     const messagesView = document.querySelector(".messagesView");
-    
+    console.log("Działam tutaj");
     conv.content.forEach(el =>{
         const msg = document.createElement("p");
-        
+        console.log("Działam tutaj");
         messagesView.appendChild(msg);
+        console.log("Działam tutaj");
         if(el.sender === username) {
-            user = "You";
+            console.log("Działam tutaj1");
+            el.sender = "You";
             msg.style.width="80%";
             msg.style.float="right";
             msg.style.textAlign="right";
             msg.style.marginRight="3px";
             msg.style.color="#03A062";
         }else{
+            console.log("Działam tutaj2");
             msg.style.width="80%";
             msg.style.float="left";
             msg.style.textAlign="left";
             msg.style.marginLeft="3px";
             msg.style.color="white";
         }
-        
-        msg.innerHTML = `<span style="color: #00bfff;">${el.sender}:</span><span>${el.message}</span>`;
+        console.log("Działam tutaj2");
+        msg.innerHTML = `<span style="color: #00bfff;">${el.sender}:</span><span>${el.msg}</span>`;
     });
     //skrolowanie listy wiadomości do dołu 
     messagesView.scrollTop = messagesView.scrollHeight;

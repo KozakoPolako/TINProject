@@ -58,14 +58,14 @@ namespace czatSerwerTIN.Hubs
 
             var json = JsonSerializer.Serialize(list);
             
-            await Clients.Caller.SendAsync("ReciveUserList", json );
+            await Clients.Caller.SendAsync("ReceiveUserList", json );
         }
 
         public async Task getGroupsByUser(string userName)
         {
             var json = JsonSerializer.Serialize(await mongo.GetGroups(userName));
 
-            await Clients.Caller.SendAsync("ReciveGroupList", json);
+            await Clients.Caller.SendAsync("ReceiveGroupList", json);
         }
         public async Task Login(string userName, string password)
         {

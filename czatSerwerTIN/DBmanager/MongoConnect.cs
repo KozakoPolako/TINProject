@@ -111,7 +111,7 @@ namespace czatSerwerTIN.DBmanager
             
             foreach(BsonValue content in contentCursor)
             {
-                group.addMessage(new Message(content["Sender"].AsString, content["Message"].AsString, content["Time"].AsInt64));
+                group.addMessage(new Message(content["Sender"].AsString, content["Message"].AsString, content["Time"].AsInt32));
                 Console.WriteLine($"{content["Sender"].AsString} | {content["Message"].AsString} ");
             }
 
