@@ -7,14 +7,20 @@ using System.Threading.Tasks;
 
 namespace czatSerwerTIN
 {
+    /// <summary>
+    /// Klasa reprezentująca obiekt użytkownika w systemie
+    /// </summary>
     public class User
     {
-       
+        /// <summary>
+        /// nazwa użytkownika
+        /// </summary>
         [BsonId]
         [BsonRepresentation(MongoDB.Bson.BsonType.ObjectId)]
-        
-       // public string connID { get; set; }
         public string name { get; set; }
+        /// <summary>
+        /// DEPRECATED
+        /// </summary>
         public string isActive { get; set; }
         public User(string name, string isActive)
         {
