@@ -4,7 +4,7 @@ import  * as signalR  from "@microsoft/signalr";
 
 let username;
 
-const base64 = {byte:""};
+const base64 = {byte:"",type:""};
 const selected = { item: "none" , type:"none"};
 let activeUsers;
 const loginBtn = document.querySelector(".loginBtn");
@@ -169,7 +169,7 @@ const prepareWindow=function() {
     //divBox.innerHTML = "<p>M</p>";
     
     imageInput.type = "file";
-    imageInput.accept = "image/png, image/jpeg";
+    imageInput.accept = "image/*, audio/*";
     
 
     divBox.appendChild(imageInput);
@@ -193,6 +193,15 @@ const prepareWindow=function() {
     //container.appendChild(messegeInput);
     //container.appendChild(sendMessege);
 
+    imageInput.addEventListener("change", e =>{
+        const file = e.target.files[0];
+        base64.type = file.type.substring(0,5);
+        console.log("===========================================================");
+        console.log("TYp piku :", base64.type);
+        console.log("===========================================================");
+        toBase64(file);
+    });
+
     connection.on("ReceiveMessage", function (destination, json) {
         const message = JSON.parse(json);
         console.dir(message);
@@ -214,9 +223,15 @@ const prepareWindow=function() {
                 msg.style.color="white";
             }
         
-        //skrolowanie listy wiadomości do dołu 
-        messagesView.scrollTop = messagesView.scrollHeight;
-        msg.innerHTML = `<span style="color: #00bfff;">${message.sender}:</span><span>${message.msg}</span>`;
+            //skrolowanie listy wiadomości do dołu 
+            messagesView.scrollTop = messagesView.scrollHeight;
+            if(message.type =="image") {
+                msg.innerHTML = `<span style="color: #00bfff;">${message.sender}:</span><img src="${message.msg}"></img>`;
+            } else if (message.type =="audio"){
+                msg.innerHTML = `<span style="color: #00bfff;">${message.sender}:</span><audio controls ><source src="${message.msg}"></audio>`;
+            } else{
+                msg.innerHTML = `<span style="color: #00bfff;">${message.sender}:</span><span>${message.msg}</span>`;
+            }
         }else {
             const name = document.getElementById(destination);
             name.classList.add("unseen");
@@ -247,13 +262,15 @@ const prepareWindow=function() {
                 msg.style.color="white";
             }
         
-        //skrolowanie listy wiadomości do dołu 
-        messagesView.scrollTop = messagesView.scrollHeight;
-        if(message.type =="Image") {
-            msg.innerHTML = `<span style="color: #00bfff;">${message.sender}:</span><img src="${message.msg}"></img>`;
-        } else{
-            msg.innerHTML = `<span style="color: #00bfff;">${message.sender}:</span><span>${message.msg}</span>`;
-        }
+            //skrolowanie listy wiadomości do dołu 
+            messagesView.scrollTop = messagesView.scrollHeight;
+            if(message.type =="image") {
+                msg.innerHTML = `<span style="color: #00bfff;">${message.sender}:</span><img src="${message.msg}"></img>`;
+            } else if (message.type =="audio"){
+                msg.innerHTML = `<span style="color: #00bfff;">${message.sender}:</span><audio controls ><source src="${message.msg}"></audio>`;
+            } else{
+                msg.innerHTML = `<span style="color: #00bfff;">${message.sender}:</span><span>${message.msg}</span>`;
+            }
         }else if(destination != username){
 
             const name = document.getElementById(destination);
@@ -298,17 +315,18 @@ const prepareWindow=function() {
         const message = document.querySelector(".messageInput").value;
         document.querySelector(".messageInput").value = "";
         if (document.querySelector(".imageInput").value !="") {
+            
             if(selected.type ==="user") {
             
-                connection.invoke("SendPrivateMessage", username,selected.item, toBase64(document.querySelector(".imageInput").files[0]),"Image").catch( (err) => console.error(err.toString()) );
+                connection.invoke("SendPrivateMessage", username,selected.item, base64.byte,base64.type).catch( (err) => console.error(err.toString()) );
                 console.log("wiadomość prywatna");
                 //connection.invoke("SendPrivateMessage", username,username, message,"Text").catch( (err) => console.error(err.toString()) );
                 //console.log("wiadomość prywatna");
             }else {
-                connection.invoke("SendMessageToGroup", username,selected.item, toBase64(document.querySelector(".imageInput").files[0]),"Image").catch( (err) => console.error(err.toString()) );
+                connection.invoke("SendMessageToGroup", username,selected.item, base64.byte,base64.type).catch( (err) => console.error(err.toString()) );
                 console.log("wiadomość do grupy");
             }
-            
+            document.querySelector(".imageInput").value ="";
         }
         else {
             if (selected.item ==="none"){
@@ -561,9 +579,11 @@ const showMessages = function(conv){
             msg.style.color="white";
         }
         console.log("Działam tutaj2 Type ", el.type);
-        if(el.type =="Image") {
+        if(el.type =="image") {
             msg.innerHTML = `<span style="color: #00bfff;">${el.sender}:</span><img src="${el.msg}"></img>`;
-        } else{
+        } else if (el.type =="audio"){
+            msg.innerHTML = `<span style="color: #00bfff;">${el.sender}:</span><audio controls ><source src="${el.msg}"></audio>`;
+        } else {
             msg.innerHTML = `<span style="color: #00bfff;">${el.sender}:</span><span>${el.msg}</span>`;
         }
         
@@ -594,5 +614,5 @@ const toBase64 = function(file){
     };
     console.log(base64.byte);
     reader.readAsDataURL(file);
-    return base64.byte;
+    
 }
