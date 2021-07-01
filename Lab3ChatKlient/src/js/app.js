@@ -249,7 +249,11 @@ const prepareWindow=function() {
         
         //skrolowanie listy wiadomości do dołu 
         messagesView.scrollTop = messagesView.scrollHeight;
-        msg.innerHTML = `<span style="color: #00bfff;">${message.sender}:</span><span>${message.msg}</span>`;
+        if(message.type =="Image") {
+            msg.innerHTML = `<span style="color: #00bfff;">${message.sender}:</span><img src="${message.msg}"></img>`;
+        } else{
+            msg.innerHTML = `<span style="color: #00bfff;">${message.sender}:</span><span>${message.msg}</span>`;
+        }
         }else if(destination != username){
 
             const name = document.getElementById(destination);

@@ -234,8 +234,19 @@ input{
     border-radius: 3px;
 }
 
+
 .inputBox:hover{
     color: black ;
     background-color:white;
     cursor: pointer;
+}
+.messagesView  img{
+    // position: relative;
+    // font-size:15px;
+    // color:white;
+    // max-width: 500px;
+    // word-wrap: break-word; 
+    max-width: 250px;
+    
+    
 }
