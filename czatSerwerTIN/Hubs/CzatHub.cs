@@ -182,14 +182,18 @@ namespace czatSerwerTIN.Hubs
                     await Clients.Client(connID).SendAsync("ReceivePrivateMessage", destination, json); //do nadawcy
                 }
             }
-            UserInfo dest = userInfoList.FirstOrDefault(u => u.userName.Equals(destination));
-            if(dest != null)
+            if (!sender.Equals(destination))
             {
-                foreach (string connID in dest.connectionIDs)
+                UserInfo dest = userInfoList.FirstOrDefault(u => u.userName.Equals(destination));
+                if (dest != null)
                 {
-                    await Clients.Client(connID).SendAsync("ReceivePrivateMessage", sender, json); //do adresata
+                    foreach (string connID in dest.connectionIDs)
+                    {
+                        await Clients.Client(connID).SendAsync("ReceivePrivateMessage", sender, json); //do adresata
+                    }
                 }
             }
+            
             
         }
 
