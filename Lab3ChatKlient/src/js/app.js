@@ -1,31 +1,33 @@
 
-import  * as signalR  from "@microsoft/signalr";
+import * as signalR from "@microsoft/signalr";
+import { serverConn } from "./serverConn.js";
 
 
 let username;
+const server = new serverConn();
 
-const base64 = {byte:"",type:""};
-const selected = { item: "none" , type:"none"};
+const base64 = { byte: "", type: "" };
+const selected = { item: "none", type: "none" };
 let activeUsers;
 const loginBtn = document.querySelector(".loginBtn");
 
 const unseen = new Set();
 //zbior konwersacji
-const messages = new Set(); 
+const messages = new Set();
 //konwersacja 
-class conversation{
-    
+class conversation {
+
     constructor(groupname, type) {
         this.groupName = groupname;
         this.type = type;
         this.content = new Set();
     }
-    addMessage(message){
+    addMessage(message) {
         this.content.add(message);
     }
 }
 //wiadomosc
-class message{
+class message {
     constructor(sender, time, message) {
         this.sender = sender;
         this.time = time;
@@ -36,50 +38,33 @@ class message{
 
 
 
-console.log(signalR);
-var connection =connection = new signalR.HubConnectionBuilder()
-.configureLogging(signalR.LogLevel.Debug)
-.withUrl("http://localhost:5000/czathub", {
-//.withUrl("http://192.168.0.246:5000/czathub", {
-  skipNegotiation: true,
-  transport: signalR.HttpTransportType.WebSockets
-})
-.withAutomaticReconnect()
-.build();
+
+//var connection = server.getConnection();
 
 
 // wyłączenie przycisku do momentu połączenia 
 loginBtn.disabled = true;
 
-
-
-
-//start połączenia 
-connection.start().then( () => {
+//nawiązywanie połączenia 
+server.start(() => {
     loginBtn.disabled = false;
-    
+    console.log("Działam z obiektu");
     loginBtn.style.color = "white";
-    loginBtn.value="Start";
-}).catch ( err => {
+    loginBtn.value = "Start";
+}, (err) => {
     loginBtn.style.color = "red";
-    loginBtn.value="Conn.ERROR";
+    loginBtn.value = "Conn.ERROR";
     return console.error(err.toString());
 });
 
-loginBtn.addEventListener("click", (event) => {
-    username = document.querySelector(".userNameInput").value;
-    
-    //console.log("Zalogowano");
-    connection.invoke("Login",username, document.querySelector(".passwordInput").value)
-        .catch(err => console.error(err.toString()));
-    
-    
-    
-    event.preventDefault();
 
-    
-    
-})
+
+loginBtn.addEventListener("click", (event) => {
+
+    username = document.querySelector(".userNameInput").value;
+    server.login(username, document.querySelector(".passwordInput").value);
+    event.preventDefault();
+});
 
 // klawisz enter aktywuje przycisk Start
 document.querySelector(".userNameInput").addEventListener("keyup", (event) => {
@@ -87,27 +72,24 @@ document.querySelector(".userNameInput").addEventListener("keyup", (event) => {
     if (event.key === 'Enter') {
         event.preventDefault();
         loginBtn.click();
-    } 
+    }
 })
 
-connection.on("LoginStatus", function(status) {
-    console.dir(status);
-    if (status) {
-        prepareWindow();
-        connection.invoke("GetUsers")
-            .catch(err => console.error(err.toString()));
-        connection.invoke("getGroupsByUser",username)
-            .catch(err => console.error(err.toString()));
-    }else 
-    {
-        loginBtn.style.color = "red";
-        loginBtn.value="ERROR";
-        document.querySelector(".passwordInput").addEventListener("input", ()=> {
-            loginBtn.style.color = "white";
-            loginBtn.value="LOGIN";
-        });
-    }
-});
+//nasłuchowanie statusu
+server.onLoginStatus(function() {
+    prepareWindow();
+    server.getUsers();
+    server.getGroupsByUser(username);
+}, () => {
+    loginBtn.style.color = "red";
+    loginBtn.value = "ERROR";
+    document.querySelector(".passwordInput").addEventListener("input", () => {
+        loginBtn.style.color = "white";
+        loginBtn.value = "LOGIN";
+    });
+})
+
+
 
 
 
@@ -117,7 +99,7 @@ connection.on("LoginStatus", function(status) {
 
 
 // tworzenie okna po zalogowaniu  
-const prepareWindow=function() {
+const prepareWindow = function () {
 
     const children = Array.prototype.slice.call(loginBtn.parentNode.children);
     children.forEach(el => el.remove());
@@ -126,7 +108,7 @@ const prepareWindow=function() {
     container.remove();
 
     const appPanel = document.createElement("div");
-    
+
     const groupsList = document.createElement("div");
     const usersList = document.createElement("div");
 
@@ -136,21 +118,21 @@ const prepareWindow=function() {
     const sendMessage = document.createElement("div");
     const breakLine = document.createElement("div");
     const join = document.createElement("div");
-    
+
     const div1 = document.createElement("div");
     const div2 = document.createElement("div");
     const div3 = document.createElement("div");
     const divBox = document.createElement("div");
 
-    div1.style.width="100%";
-    div1.style.display="flex";
-    div2.style.width="100%";
+    div1.style.width = "100%";
+    div1.style.display = "flex";
+    div2.style.width = "100%";
 
     appPanel.classList.add("appPanel");
 
     groupsList.classList.add("listPanel");
     groupsList.id = "groupsList";
-    groupsList.style.height ="400px";
+    groupsList.style.height = "400px";
 
     usersList.classList.add("listPanel");
     usersList.id = "usersList";
@@ -163,14 +145,14 @@ const prepareWindow=function() {
     join.classList.add("joinBTN");
     divBox.classList.add("inputBox");
 
-    
+
     sendMessage.innerHTML = "<p>SEND</p>";
     join.innerHTML = "<p>JOIN</p>";
     //divBox.innerHTML = "<p>M</p>";
-    
+
     imageInput.type = "file";
     imageInput.accept = "image/*, audio/*";
-    
+
 
     divBox.appendChild(imageInput);
     container.appendChild(messagesView);
@@ -193,159 +175,68 @@ const prepareWindow=function() {
     //container.appendChild(messegeInput);
     //container.appendChild(sendMessege);
 
-    imageInput.addEventListener("change", e =>{
+    imageInput.addEventListener("change", e => {
         const file = e.target.files[0];
-        base64.type = file.type.substring(0,5);
+        base64.type = file.type.substring(0, 5);
         console.log("===========================================================");
-        console.log("TYp piku :", base64.type);
+        console.log("Typ piku :", base64.type);
         console.log("===========================================================");
         toBase64(file);
     });
 
-    connection.on("ReceiveMessage", function (destination, json) {
-        const message = JSON.parse(json);
-        console.dir(message);
-        const msg = document.createElement("p");
-        if (selected.item === destination && selected.type === "group"){
-            messagesView.appendChild(msg);
-            if(message.sender === username) {
-                message.sender = "You";
-                msg.style.width="80%";
-                msg.style.float="right";
-                msg.style.textAlign="right";
-                msg.style.marginRight="3px";
-                msg.style.color="#03A062";
-            }else{
-                msg.style.width="80%";
-                msg.style.float="left";
-                msg.style.textAlign="left";
-                msg.style.marginLeft="3px";
-                msg.style.color="white";
-            }
-        
-            //skrolowanie listy wiadomości do dołu 
-            messagesView.scrollTop = messagesView.scrollHeight;
-            if(message.type =="image") {
-                msg.innerHTML = `<span style="color: #00bfff;">${message.sender}:</span><img src="${message.msg}"></img>`;
-            } else if (message.type =="audio"){
-                msg.innerHTML = `<span style="color: #00bfff;">${message.sender}:</span><audio controls ><source src="${message.msg}"></audio>`;
-            } else{
-                msg.innerHTML = `<span style="color: #00bfff;">${message.sender}:</span><span>${message.msg}</span>`;
-            }
-        }else {
-            const name = document.getElementById(destination);
-            name.classList.add("unseen");
-            unseen.add(destination);
+    server.onReceiveGroupMessage(appendMessage);
 
-        }
-        
-    });
-
-    connection.on("ReceivePrivateMessage", function (destination, json) {
-        const message = JSON.parse(json);
-        console.dir(message);
-        const msg = document.createElement("p");
-        if (selected.item === destination && selected.type === "user"){
-            messagesView.appendChild(msg);
-            if(message.sender === username) {
-                message.sender = "You";
-                msg.style.width="80%";
-                msg.style.float="right";
-                msg.style.textAlign="right";
-                msg.style.marginRight="3px";
-                msg.style.color="#03A062";
-            }else{
-                msg.style.width="80%";
-                msg.style.float="left";
-                msg.style.textAlign="left";
-                msg.style.marginLeft="3px";
-                msg.style.color="white";
-            }
-        
-            //skrolowanie listy wiadomości do dołu 
-            messagesView.scrollTop = messagesView.scrollHeight;
-            if(message.type =="image") {
-                msg.innerHTML = `<span style="color: #00bfff;">${message.sender}:</span><img src="${message.msg}"></img>`;
-            } else if (message.type =="audio"){
-                msg.innerHTML = `<span style="color: #00bfff;">${message.sender}:</span><audio controls ><source src="${message.msg}"></audio>`;
-            } else{
-                msg.innerHTML = `<span style="color: #00bfff;">${message.sender}:</span><span>${message.msg}</span>`;
-            }
-        }else if(destination != username){
-
-            const name = document.getElementById(destination);
-            name.classList.add("unseen");
-
-        }
-        
-    });
-
-    connection.on("ReceiveUserList" ,  json => {
-        //activeUsers  = JSON.parse(json);
-        //console.dir(activeUsers);
-        buildUsersList(json);
-    } );
-
-    connection.on("ReceiveGroupList" ,  json => {
-        //activeUsers  = JSON.parse(json);
-        //console.dir(activeUsers);
-        buildGroupsList(json);
-    } );
-
-    connection.on("ReceiveMessagesByGroup" ,  json => {
-        console.log();
-        console.log("json: " + json);
-        console.log();
+    server.onReceivePrivateMessage(appendMessage);   
+    
+    server.onReceiveUsersList(buildUsersList);
+    
+    server.onReceiveGroupsList(buildGroupsList);
+    
+    server.onReceiveMessagesPack( (json) => {
         const conv = JSON.parse(json);
         console.dir(conv);
-        // messages.forEach(obj =>{
-        //     if (obj.groupName === conv.groupName) messages.delete(obj);
-        // });
-
-        // messages.add(conv.content);
-
         showMessages(conv);
-    } );
-
+    });
     
+
+
 
     join.addEventListener("click", addToGroup);
-    
+
     document.querySelector(".sendMessage").addEventListener("click", (event) => {
         const message = document.querySelector(".messageInput").value;
         document.querySelector(".messageInput").value = "";
-        if (document.querySelector(".imageInput").value !="") {
-            
-            if(selected.type ==="user") {
-            
-                connection.invoke("SendPrivateMessage", username,selected.item, base64.byte,base64.type).catch( (err) => console.error(err.toString()) );
-                console.log("wiadomość prywatna");
-                //connection.invoke("SendPrivateMessage", username,username, message,"Text").catch( (err) => console.error(err.toString()) );
-                //console.log("wiadomość prywatna");
-            }else {
-                connection.invoke("SendMessageToGroup", username,selected.item, base64.byte,base64.type).catch( (err) => console.error(err.toString()) );
-                console.log("wiadomość do grupy");
+        if (document.querySelector(".imageInput").value != "") {
+
+            if (selected.type === "user") {
+                server.sendPrivateMessage(username, selected.item, base64.byte, base64.type);
+                
+            } else {
+
+                server.sendGroupMessage(username, selected.item, base64.byte, base64.type);
+                
             }
-            document.querySelector(".imageInput").value ="";
+            document.querySelector(".imageInput").value = "";
         }
         else {
-            if (selected.item ==="none"){
-                connection.invoke("SendMessage", username, message,"Text").catch( (err) => console.error(err.toString()) );
-                console.log("wiadomość do wszystkich"); 
+            if (selected.item === "none") {
+                console.log("No destination selected");
+                document.querySelector(".messageInput").value = message;
             }
-        
-            else if(selected.type ==="user") {
-            
-                connection.invoke("SendPrivateMessage", username,selected.item, message,"Text").catch( (err) => console.error(err.toString()) );
+
+            else if (selected.type === "user") {
+
+                server.sendPrivateMessage(username, selected.item, message, "Text");
+                
                 console.log("wiadomość prywatna");
-                //connection.invoke("SendPrivateMessage", username,username, message,"Text").catch( (err) => console.error(err.toString()) );
-                //console.log("wiadomość prywatna");
-            }else {
-                connection.invoke("SendMessageToGroup", username,selected.item, message,"Text").catch( (err) => console.error(err.toString()) );
+                
+            } else {
+                server.sendGroupMessage(username, selected.item, message, "Text");
+                
                 console.log("wiadomość do grupy");
             }
         }
-        
+
     });
 
     // klawisz enter aktywuje przycisk sendsendMessage
@@ -354,18 +245,11 @@ const prepareWindow=function() {
             event.preventDefault();
             sendMessage.click();
         }
-    })
-    // Testowanie Grup ();
-    console.log("jo");
-    //connection.invoke("AddUserToGroup","Czarek","Grupa nie testowa");
-    //connection.invoke("AddUserToGroup","Marek","Grupa nie testowa");
-    //connection.invoke("AddUserToGroup","Darek","prawidlowa");
-    //connection.invoke("SendMessageToGroup","Darek","Grupa Testowa","Wiadomość testowa");
-    
+    });
     
 };
 
-const buildUsersList = function(json) {
+const buildUsersList = function (json) {
 
     console.log("działam");
     const usersList = document.querySelector("#usersList");
@@ -384,32 +268,30 @@ const buildUsersList = function(json) {
         if (unseen.has(el.name)) {
             user.classList.add("unseen");
         }
-        if (el.isActive === "True" ) {
-            user.style.color="#03A062";
-        }else {
-            user.style.color="white"; }
-        
-        
+        if (el.isActive === "True") {
+            user.style.color = "#03A062";
+        } else {
+            user.style.color = "white";
+        }
+
+
         if (el.name === selected.item) {
             user.classList.add("selected");
         }
-        
-        user.addEventListener("click",getSelected);
+
+        user.addEventListener("click", getSelected);
         usersList.appendChild(user);
     });
 
 
 
     setTimeout(() => {
-        connection.invoke("GetUsers")
-            .catch(err => console.error(err.toString()));
-        connection.invoke("getGroupsByUser",username)
-            .catch(err => console.error(err.toString()));
-        console.log(username);
-    },15000);
+        server.getUsers();
+        server.getGroupsByUser(username);
+    }, 15000);
 }
 
-const buildGroupsList = function(json) {
+const buildGroupsList = function (json) {
 
     const usersList = document.querySelector("#groupsList");
 
@@ -424,9 +306,9 @@ const buildGroupsList = function(json) {
     Groups.forEach(el => {
         group = document.createElement("p");
         group.innerHTML = el;
-        console.log("Nazwa :::::"+el);
-        group.id = el+"";
-        group.style.color="white";
+        console.log("Nazwa :::::" + el);
+        group.id = el + "";
+        group.style.color = "white";
         if (unseen.has(el)) {
             group.classList.add("unseen");
         }
@@ -434,50 +316,50 @@ const buildGroupsList = function(json) {
             flag = false;
             group.classList.add("selected");
         }
-        group.addEventListener("click",getSelected);
+        group.addEventListener("click", getSelected);
         usersList.appendChild(group);
-        
+
     });
-    console.log("flag",flag," type",selected.type);
-    if (flag === true && selected.type !== "user"){
+    console.log("flag", flag, " type", selected.type);
+    if (flag === true && selected.type !== "user") {
         abortion();
     }
 }
 
-const getSelected = function() {
+const getSelected = function () {
 
-    document.querySelector(".joinBTN").innerHTML ="<p>JOIN</p>";
+    document.querySelector(".joinBTN").innerHTML = "<p>JOIN</p>";
 
-    if (selected.item !== "none"){
+    if (selected.item !== "none") {
         console.log("działam tutaj przy zmianie");
         document.getElementById(selected.item).classList.remove("unseen");
         console.dir(document.getElementById(selected.item));
         unseen.delete(selected.item);
     }
-        
+
     //console.dir(this);
     //this.classList.remove("unseen");
-    
+
     const sel = document.querySelector(".selected");
-    
-    if ( sel ){
+
+    if (sel) {
         sel.classList.remove("selected");
     }
     ;
     if (selected.item === this.innerHTML) {
-        
-        this.color ="white";
+
+        this.color = "white";
         selected.item = "none";
         selected.type = "none";
-    }else{
+    } else {
 
-        selected.item =this.innerHTML;
-        if(this.parentNode.id === "usersList") {
-            buildConversation(selected.item,"Private");
+        selected.item = this.innerHTML;
+        if (this.parentNode.id === "usersList") {
+            buildConversation(selected.item, "Private");
             selected.type = "user";
-        }else {
-            document.querySelector(".joinBTN").innerHTML ="<p>LEAVE</p>";
-            buildConversation(selected.item,"Public");
+        } else {
+            document.querySelector(".joinBTN").innerHTML = "<p>LEAVE</p>";
+            buildConversation(selected.item, "Public");
             selected.type = "group";
         }
         this.classList.add("selected");
@@ -486,23 +368,20 @@ const getSelected = function() {
 
 
 
-    
+
 }
 
-const addToGroup = function() {
+const addToGroup = function () {
 
-    if(selected.type === "group"){
+    if (selected.type === "group") {
 
-        connection.invoke("RemoveUserFromGroup",username,selected.item)
-            .catch(err => console.error(err.toString()));
-        
-        //connection.invoke("getGroupsByUser",username)
-        //    .catch(err => console.error(err.toString()));
-        selected.item ="none";
-        selected.type ="none";
-        document.querySelector(".joinBTN").innerHTML ="<p>JOIN</p>";
+        server.removeUserFromGroup(username, selected.item);
 
-    }else {
+        selected.item = "none";
+        selected.type = "none";
+        document.querySelector(".joinBTN").innerHTML = "<p>JOIN</p>";
+
+    } else {
         const window = document.createElement("div");
         const groupInput = document.createElement("input");
         const joinBTN = document.createElement("div");
@@ -511,108 +390,144 @@ const addToGroup = function() {
         joinBTN.classList.add("joinTogroupBTN");
         window.classList.add("addToGroup");
 
-        groupInput.placeholder ="Groupname";
-        joinBTN.innerHTML ="<p>EXIT</p>";
+        groupInput.placeholder = "Groupname";
+        joinBTN.innerHTML = "<p>EXIT</p>";
 
         window.appendChild(groupInput);
         window.appendChild(joinBTN);
 
         document.querySelector("body").appendChild(window);
         // zmiana wartości przycisku w zależności od wartości pola
-        groupInput.addEventListener("input" , ()=>{
-            if (groupInput.value ===""){
-                joinBTN.innerHTML ="<p>EXIT</p>";
-            }else {
-                joinBTN.innerHTML ="<p>JOIN</p>";
+        groupInput.addEventListener("input", () => {
+            if (groupInput.value === "") {
+                joinBTN.innerHTML = "<p>EXIT</p>";
+            } else {
+                joinBTN.innerHTML = "<p>JOIN</p>";
             }
-        
+
         })
 
         //dodawanie do grupy
         joinBTN.addEventListener("click", () => {
-            if (groupInput.value ===""){
+            if (groupInput.value === "") {
                 window.remove();
-            }else {
-            
-                connection.invoke("AddUserToGroup",username,groupInput.value)
-                    .catch(err => console.error(err.toString()));
-                //connection.invoke("getGroupsByUser",username)
-                //    .catch(err => console.error(err.toString()));
+            } else {
+
+                server.addUserToGroup(username, groupInput.value);
+                
                 window.remove();
             }
         });
     }
-    
+
 }
 
-const buildConversation = function(convName,type){
+const buildConversation = function (convName, type) {
 
+    server.getMessagesByGroup(convName, type);
     
-    connection.invoke("getMessagesByGroup",convName,type)
-                    .catch(err => console.error(err.toString()));
-
     abortion();
 }
-const showMessages = function(conv){
+const appendMessage = function (destination, json, type) {
+    const messagesView = document.querySelector(".messagesView");
+    const message = JSON.parse(json);
+    //console.dir(message);
+    const msg = document.createElement("p");
+    if (selected.item === destination && selected.type === type) {
+        messagesView.appendChild(msg);
+        if (message.sender === username) {
+            message.sender = "You";
+            msg.style.width = "80%";
+            msg.style.float = "right";
+            msg.style.textAlign = "right";
+            msg.style.marginRight = "3px";
+            msg.style.color = "#03A062";
+        } else {
+            msg.style.width = "80%";
+            msg.style.float = "left";
+            msg.style.textAlign = "left";
+            msg.style.marginLeft = "3px";
+            msg.style.color = "white";
+        }
+
+        //skrolowanie listy wiadomości do dołu 
+        messagesView.scrollTop = messagesView.scrollHeight;
+
+        if (message.type == "image") {
+            msg.innerHTML = `<span style="color: #00bfff;">${message.sender}:</span><img src="${message.msg}"></img>`;
+        } else if (message.type == "audio") {
+            msg.innerHTML = `<span style="color: #00bfff;">${message.sender}:</span><audio controls ><source src="${message.msg}"></audio>`;
+        } else {
+            msg.innerHTML = `<span style="color: #00bfff;">${message.sender}:</span><span>${message.msg}</span>`;
+        }
+    } else {
+        const name = document.getElementById(destination);
+        name.classList.add("unseen");
+        unseen.add(destination);
+
+    }
+}
+
+const showMessages = function (conv) {
     console.log("Działam tutaj");
     const messagesView = document.querySelector(".messagesView");
     console.log("Działam tutaj");
-    conv.content.forEach(el =>{
+    conv.content.forEach(el => {
         const msg = document.createElement("p");
         console.log("Działam tutaj");
         messagesView.appendChild(msg);
         console.log("Działam tutaj");
-        if(el.sender === username) {
+        if (el.sender === username) {
             console.log("Działam tutaj1");
             el.sender = "You";
-            msg.style.width="80%";
-            msg.style.float="right";
-            msg.style.textAlign="right";
-            msg.style.marginRight="3px";
-            msg.style.color="#03A062";
-        }else{
+            msg.style.width = "80%";
+            msg.style.float = "right";
+            msg.style.textAlign = "right";
+            msg.style.marginRight = "3px";
+            msg.style.color = "#03A062";
+        } else {
             console.log("Działam tutaj2");
-            msg.style.width="80%";
-            msg.style.float="left";
-            msg.style.textAlign="left";
-            msg.style.marginLeft="3px";
-            msg.style.color="white";
+            msg.style.width = "80%";
+            msg.style.float = "left";
+            msg.style.textAlign = "left";
+            msg.style.marginLeft = "3px";
+            msg.style.color = "white";
         }
         console.log("Działam tutaj2 Type ", el.type);
-        if(el.type =="image") {
+        if (el.type == "image") {
             msg.innerHTML = `<span style="color: #00bfff;">${el.sender}:</span><img src="${el.msg}"></img>`;
-        } else if (el.type =="audio"){
+        } else if (el.type == "audio") {
             msg.innerHTML = `<span style="color: #00bfff;">${el.sender}:</span><audio controls ><source src="${el.msg}"></audio>`;
         } else {
             msg.innerHTML = `<span style="color: #00bfff;">${el.sender}:</span><span>${el.msg}</span>`;
         }
-        
+
     });
     //skrolowanie listy wiadomości do dołu 
     messagesView.scrollTop = messagesView.scrollHeight;
-    
-    
-    
+
+
+
 
 }
-const abortion = function(){
+const abortion = function () {
     const messagesView = document.querySelector(".messagesView");
     const children = Array.prototype.slice.call(messagesView.children);
     children.forEach(el => el.remove());
 }
 
 
-const toBase64 = function(file){
+const toBase64 = function (file) {
 
     //let base64 ;
     const reader = new FileReader();
     reader.onloadend = () => {
-      // log to console
-      // logs data:<type>;base64,wL2dvYWwgbW9yZ...
-       base64.byte = reader.result;
-      //console.log(reader.result);
+        // log to console
+        // logs data:<type>;base64,wL2dvYWwgbW9yZ...
+        base64.byte = reader.result;
+        //console.log(reader.result);
     };
     console.log(base64.byte);
     reader.readAsDataURL(file);
-    
+
 }
